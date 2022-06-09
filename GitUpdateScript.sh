@@ -8,5 +8,5 @@ echo "[*] Committing changes to local"
 git commit -am "Regular changes" &&
 echo "[*] Pushing changes to remote"
 git push origin main && 
-echo "[*] Updating local"
+echo "[*] Updating local from remote"
 git pull origin main
