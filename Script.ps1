@@ -1,8 +1,7 @@
 # ********************Initialization Section********************
 
+Write-Host "[*] You need atleast PowerShell 7.2 to run this script"
 Write-Host '[*] Intializing System-Wide Optimization (SWO) Script'
-Write-Host = '[*] This may take some time :)'
-
 
 # Import user module
 Import-Module -Name Microsoft.PowerShell.LocalAccounts
@@ -28,8 +27,35 @@ else {
 
 function Get_System_Information_Handle_Function {
     # Get OS version
-    # Get last optimize time for disks
-    # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
+    $OSVersion = Get-ComputerInfo | Select-Object WindowsProductName
+
+    # Get disk defragmentor logs. This 
+    $LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname='Application'; id=258} | Select-Object TimeCreated | Select-Object -First 1
+
+    # Necessary formatting
+    $LastDiskOptimizeDate = $LastDiskOptimizeDate -split " " -split "="
+    $LastDiskOptimizeDate = $LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
+
+    # Current Date
+    $CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
+
+    # Debugging outputs
+    Write-Host "Date today is $CurrentDate"
+
+    # Days passed since the disk was optimized
+    $DaysSinceDiskLastOptimized = New-TimeSpan -Start $LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
+
+    # Necessary formatting
+    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "{" -split "=" 
+    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
+    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "}"
+    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -First 1
+    
+    # Debugging outputs
+    Write-Host "Disk was optimized $DaysSinceDiskLastOptimized days ago"
+
+    
+
 }
 
 function Parse_Windows_Event_Log_Handle_Function {
@@ -42,7 +68,7 @@ function Parse_Windows_Event_Log_Handle_Function {
 
 # ***************Probabilistic activation determination (PAD) Sub-Section***************
 
-# *****Part-1 of PAD*****
+# *****Part-1 of PAD Sub-Section*****
 
 # Determining probabilities
 function Compute_BSOD_Probability_Handle_Function {
@@ -56,7 +82,7 @@ function Compute_Security_Related_Stuff_Handle_Function {
 
 }
 
-# *****Part-2 of PAD*****
+# *****Part-2 of PAD Sub-Section*****
 function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
     # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
     # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
@@ -67,9 +93,13 @@ function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
 # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
 # where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
 function __Input_Dispatch_Center_Update_Function__ {
-    param (
-        OptionalParameters
-    )
+    [CmdletBinding()] param([Parameter()] [bool] $InputDispatchCenterFunction)
+
+    Write-Host "[*] Checking Base Information Sub-Section Intitialization"
+
+    # if the value of $InputDispatchCenterFunction is set to true then control-flow will continue
+    # that will happen only when the Base Information Sub-Section is properly initialized
+
 }
 
 
@@ -91,7 +121,21 @@ function Run_DISM_Utility_Execution_Function {
 # ***************Update Application Sub-Section***************
 
 function Update_Windows_System_Handle_Function {
-    
+    # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
+    Install-Module PSWindowsUpdate
+    $UpdateVariable = Get-WindowsUpdate
+    $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
+
+    # [!] This is working unexpectedly, opposite of expected behaviour [!]
+    if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
+        # $UpdateVariable = $False
+        Write-Host "[*] No Updates were found"
+    } else {
+        # $UpdateVariable = $True
+        Write-Host "[*] Updates found!"
+        Write-Host "[*] Installing Updates"
+        
+    }
 }
 
 function Update_Microsoft_Store_Application_Handle_Function {
@@ -132,7 +176,7 @@ function Disable_P2P_Update_Process_Handle_Function {
 # ***************Memory Resource Optimization Sub-Section***************
 
 function Run_Disk_Defragmentor_Execution_Function {
-    
+    # Optimise-Volume Cmdlet will help here
 }
 function Remove_TEMP_Files_Update_Function {
     
@@ -159,7 +203,7 @@ function Generate_Recommendations_Display_Function {
 
 }
 
-# Output function will collect exit statuses from all executed,
+# Output function will collect exit es from all executed,
 # functions and will give a green light when all are boolean true
 
 function __Output_Dispatch_Center_Update_Function__ {
