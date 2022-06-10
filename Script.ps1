@@ -81,12 +81,20 @@ function Compute_Memory_Failure_Probability_Handle_Function {
 function Compute_Security_Related_Stuff_Handle_Function {
 
 }
+function Compute_BSOD_Probability_Handle_Function {
+    # This calculates probability of BSOD events
+    # It does so by calculating the number of kernel-power failures leading to abrupt reboots
+    # Event log is the source of information
+}
 
 # *****Part-2 of PAD Sub-Section*****
 function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
     # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
     # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
     # fix a particular type of error, in this case a BSOD
+}
+function Determine_Memory_Fixing_Parameters_Activation_Handle_Function {
+    # this function determines
 }
 
 # Function to keep track of inputs after all node probability determination
