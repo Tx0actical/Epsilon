@@ -39,115 +39,22 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
 
         # ********************Initialization Section********************
 
-        # ***************Base Information Sub-Section***************
 
-        function Get_System_Information_Handle_Function {
-            
-        }
-
-        function Parse_Windows_Event_Log_Handle_Function {
-            # Parse specific events, count their number
-            # subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
-            # of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
-            # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
-            # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
-
-            # Current Date
-            $CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
-            # Debugging outputs
-            Write-Host "Date today is $CurrentDate" -ForegroundColor White -BackgroundColor Blue
-
-            # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
-            # display nothing. The docs might tell that. So try block is used to be on the safer side.
-            try {
-                $LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname='Application'; id=258} | Select-Object TimeCreated | Select-Object -First 1
-            }
-            catch {
-                Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
-            }
-
-            # Necessary formatting
-            $LastDiskOptimizeDate = $LastDiskOptimizeDate -split " " -split "="
-            $LastDiskOptimizeDate = $LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
-
-            # Days passed since the disk was optimized
-            $DaysSinceDiskLastOptimized = New-TimeSpan -Start $LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
-
-            # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
-            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "{" -split "=" 
-            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
-            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "}"
-            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -First 1
-            # Debugging outputs
-            Write-Host "Disk was optimized $DaysSinceDiskLastOptimized days ago" -ForegroundColor White -BackgroundColor Blue
-
-
-        }
+        
 
 
 
         # TO DO: Think about more sources of information for behaviour of Windows Systems
 
 
-        # ***************Probabilistic activation determination (PAD) Sub-Section***************
-
-
-        # *****Part-1 of PAD Sub-Section*****
-
-        # Determining probabilities
-        function Compute_BSOD_Probability_Handle_Function {
-            # This calculates probability of BSOD events
-            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
-            try {
-                $LastAbruptSytemRebootDate = Get-WinEvent -FilterHashtable @{logname='System'; id=41} | Select-Object TimeCreated
-                
-                # Logic is pending!
-                if($LastAbruptSytemRebootDate.Count) {
-
-                }
-            }
-            catch {
-                Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
-            }
-        }
-        function Compute_Memory_Failure_Probability_Handle_Function {
-            # This calculates probility of memory failures happening
-        }
-        function Compute_Security_Related_Stuff_Handle_Function {
-
-        }
-        function Compute_BSOD_Probability_Handle_Function {
-            # This calculates probability of BSOD events
-            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
-            # Event log is the source of information
-        }
-
-        # *****END OF -> Part-1 of PAD Sub-Section*****
-
-        # *****Part-2 of PAD Sub-Section*****
-        function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
-            # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
-            # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
-            # fix a particular type of error, in this case a BSOD
-
-            # call to IDCC Function
-            __Input_Dispatch_Center_Control_Function__
-        }
-        function Determine_Memory_Fixing_Parameters_Activation_Handle_Function {
-            # this function determines
-
-            # call to IDCC Function
-            __Input_Dispatch_Center_Control_Function__
-        }
-
-        # *****END OF -> Part-2 of PAD Sub-Section*****
+        
 
         # Function to keep track of inputs after all node probability determination
         # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
         # where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
         function __Input_Dispatch_Center_Control_Function__ { # meaning of cmdletbinding() ?
             [CmdletBinding()] param(
-                [Parameter(Position = 0)] [bool] $MASTER_INPUT_DISPATCH_CENTER_FUNCTION_STATUS,
+                [Parameter(Position = 0)] [bool] $INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
                 [Parameter(Position = 1)] [bool] $SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
                 [Parameter(Position = 2)] [bool] $SFA_SFC_EXECUTION_FUNCTION_STATUS,
                 [Parameter(Position = 3)] [bool] $SFA_DISM_EXECUTION_FUNCTION_STATUS,
@@ -172,7 +79,29 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
                 [Parameter(Position = 17)] [bool] $SA_PR_HANDLE_FUNCTION_STATUS
             )
 
-            Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization"
+
+            # ***************Base Information Sub-Section***************
+
+        # function Get_System_Information_Handle_Function {
+            
+        # }
+
+        # function Parse_Windows_Event_Log_Handle_Function {
+        #     # Parse specific events, count their number
+        #     # subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
+        #     # of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
+        #     # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
+        #     # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
+
+            
+
+        # }
+
+
+        # ***************END OF -> Base Information Sub-Section***************
+
+
+            Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor White -BackgroundColor Blue
             if($MasterInputDispatchCenterFunctionStatus -eq $True) {
                 Write-Host "[*] Sub-Section initialization completed" -ForegroundColor White -BackgroundColor Green
 
@@ -257,6 +186,36 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
                 # ***************Memory Resource Optimization Sub-Section***************
 
                 function Run_Disk_Defragmentor_Execution_Function {
+
+                    # Current Date
+                    $CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
+                    # Debugging outputs
+                    Write-Host "Date today is $CurrentDate" -ForegroundColor White -BackgroundColor Blue
+
+                    # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
+                    # display nothing. The docs might tell that. So try block is used to be on the safer side.
+                    try {
+                        $LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname='Application'; id=258} | Select-Object TimeCreated | Select-Object -First 1
+                    }
+                    catch {
+                        Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
+                    }
+
+                    # Necessary formatting
+                    $LastDiskOptimizeDate = $LastDiskOptimizeDate -split " " -split "="
+                    $LastDiskOptimizeDate = $LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
+
+                    # Days passed since the disk was optimized
+                    $DaysSinceDiskLastOptimized = New-TimeSpan -Start $LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
+
+                    # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
+                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "{" -split "=" 
+                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
+                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "}"
+                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -First 1
+                    # Debugging outputs
+                    Write-Host "Disk was optimized $DaysSinceDiskLastOptimized days ago" -ForegroundColor White -BackgroundColor Blue
+
                     # Optimise-Volume Cmdlet will help here
                 }
                 function Remove_TEMP_Files_Update_Function {
@@ -298,6 +257,62 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
             # if the value of $MASTER_INPUT_DISPATCH_CENTER_FUNCTION_STATUS is set to true then control-flow will continue
             # that will happen only when the Base Information Sub-Section is properly initialized. Hence, this variable acts as a checker.
         }
+
+
+
+        # ***************Probabilistic Activation Determination (PAD) Sub-Section***************
+
+
+        # *****Part-1 of PAD Sub-Section*****
+
+        # Determining probabilities
+        function Compute_BSOD_Probability_Handle_Function {
+            # This calculates probability of BSOD events
+            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
+            try {
+                $LastAbruptSytemRebootDate = Get-WinEvent -FilterHashtable @{logname='System'; id=41} | Select-Object TimeCreated
+                
+                # Logic is pending!
+                if($LastAbruptSytemRebootDate.Count) {
+
+                }
+            }
+            catch {
+                Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
+            }
+        }
+        function Compute_Memory_Failure_Probability_Handle_Function {
+            # This calculates probility of memory failures happening
+        }
+        function Compute_Security_Related_Stuff_Handle_Function {
+
+        }
+        function Compute_BSOD_Probability_Handle_Function {
+            # This calculates probability of BSOD events
+            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
+            # Event log is the source of information
+        }
+
+        # *****END OF -> Part-1 of PAD Sub-Section*****
+
+        # *****Part-2 of PAD Sub-Section*****
+        function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
+            # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
+            # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
+            # fix a particular type of error, in this case a BSOD
+
+            # call to IDCC Function
+            __Input_Dispatch_Center_Control_Function__
+        }
+        function Determine_Memory_Fixing_Parameters_Activation_Handle_Function {
+            # this function determines
+
+            # call to IDCC Function
+            __Input_Dispatch_Center_Control_Function__
+        }
+
+
+        # *****END OF -> Part-2 of PAD Sub-Section*****
 
 
         # Output function will collect exit codes from all executed,
