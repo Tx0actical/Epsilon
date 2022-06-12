@@ -132,7 +132,7 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
 
 
             Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor White -BackgroundColor Blue
-            if($MasterInputDispatchCenterFunctionStatus -eq $True) {
+            if($INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True) {
                 Write-Host "[*] Sub-Section initialization completed" -ForegroundColor White -BackgroundColor Green
 
                 # ***************System Files Audit Sub-Section***************
@@ -149,7 +149,6 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
                             if($i -eq $VolumeNumber) {
                                 break
                             } else {
-
                                 # run chkdsk on all volumes
                                 Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
                                 # chkdsk "$($Volume.DriveLetter[$i]):" /r
@@ -397,13 +396,13 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
         function Set_Ready_For_Final_Restart_Handle_Function {
 
         }
-    }
+    } 
 
 
     # ********************END OF -> Initialization Section********************
 
 
 } else {
-    Write-Host "[*] You need atleast PowerShell 7.2 to run this script" -ForegroundColor White -BackgroundColor Blue
+    Write-Host "[!] You need atleast PowerShell 7.2 to run this script" -ForegroundColor White -BackgroundColor Blue
     Write-Host "[*] Exiting" -ForegroundColor White -BackgroundColor Blue
 }
