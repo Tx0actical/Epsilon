@@ -1,4 +1,11 @@
-$PSVersion = 'Kevin'
-$ageList.add( $PSVersion)
+workflow test-restart {
 
-$ageList.add( '7.2.0' )
+    Get-WmiObject -Class Win32_ComputerSystem | Out-File -FilePath C:Reportscomp.txt
+   
+    Get-ChildItem -Path C:Reports | Out-File -FilePath C:dir.txt
+   
+    Restart-Computer -Wait
+   
+    Get-WmiObject -Class Win32_OperatingSystem | Out-File -FilePath C:Reportsos.txt
+   
+}

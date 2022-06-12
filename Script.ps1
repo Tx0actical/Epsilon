@@ -13,7 +13,8 @@ $MinimumRequiredPowershellVersion = [PSCustomObject]@{
 # Aadditional requirements can be added into the if below as constraints pop up
 if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -and ($HostPowershellVersion.Minor -eq $MinimumRequiredPowershellVersion.Minor)) {
     if( -not ($HostOSVersion.WindowsProductName -contains $IncompatibleOSVersion[0]) -or ($HostOSVersion.WindowsProductName -contains $IncompatibleOSVersion[1]) -or ($HostOSVersion.WindowsProductName -contains $IncompatibleOSVersion[2])) {
-        Write-Host '[*] Intializing System-Wide Optimization (SWO) Script' -ForegroundColor White -BackgroundColor Green
+        Write-Host '[*] Intializing System-Wide Optimization (SWO) Script.' 
+        Write-Host '[*] Do not interrupt the process of analysing you system for defects once it has started. Irreversible Data Loss and Disk Corruption may occur.'
 
         # Import user module
         Import-Module -Name Microsoft.PowerShell.LocalAccounts
@@ -25,12 +26,12 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
         # Check if user is Admin and act accordingly
         if ($IsAdmin -Contains $CurrentUser) {
             # Spawn PowerShell with $CurrentUser privileges
-            runas.exe /user:$CurrentUser PowerShell.exe
+            Start-Process -FilePath "powershell" -Verb RunAs
             # Modify ExecutionPolicy to run scripts
             Set-ExecutionPolicy -ExecutionPolicy Bypass
         }
         else {
-            Write-Host '[!] Admin privileges required' -ForegroundColor White -BackgroundColor Red  # can write Write-Error or something like that
+            Write-Host '[!] Admin privileges required'  # can write Write-Error or something like that
         }
 
 
@@ -86,16 +87,45 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
             
         # }
 
-        # function Parse_Windows_Event_Log_Handle_Function {
-        #     # Parse specific events, count their number
-        #     # subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
-        #     # of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
-        #     # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
-        #     # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
+        function Parse_Windows_Event_Log_Handle_Function {
+            # Parse specific events, count their number
+            # subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
+            # of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
+            # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
+            # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
 
-            
+            # Current Date
+            $CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
+            # Debugging outputs
+            Write-Host "Date today is $CurrentDate" -ForegroundColor White -BackgroundColor Blue
 
-        # }
+            # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
+            # display nothing. The docs might tell that. So try block is used to be on the safer side.
+            try {
+                $LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname='Application'; id=258} | Select-Object TimeCreated | Select-Object -First 1
+            }
+            catch {
+                Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
+            }
+
+            # Necessary formatting
+            $LastDiskOptimizeDate = $LastDiskOptimizeDate -split " " -split "="
+            $LastDiskOptimizeDate = $LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
+
+            # Days passed since the disk was optimized
+            $DaysSinceDiskLastOptimized = New-TimeSpan -Start $LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
+
+            # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
+            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "{" -split "=" 
+            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
+            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "}"
+            $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -First 1
+            # Debugging outputs
+            Write-Host "Disk was optimized $DaysSinceDiskLastOptimized days ago" -ForegroundColor White -BackgroundColor Blue
+
+            # Optimise-Volume Cmdlet will help here
+
+        }
 
 
         # ***************END OF -> Base Information Sub-Section***************
@@ -109,13 +139,49 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
 
                 if($SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
                     function Run_CHKDSK_Utility_Execution_Function {
-                    
+                        
+                        # determine volumes present in the system
+                        # run chkdsk on all those volumes
+                        $Volume = Get-Volume
+                        $VolumeNumber = $Volume.Count
+                        $i = 0
+                        foreach ($Letter in $Volume.DriveLetter) {
+                            if($i -eq $VolumeNumber) {
+                                break
+                            } else {
+
+                                # run chkdsk on all volumes
+                                Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
+                                # chkdsk "$($Volume.DriveLetter[$i]):" /r
+                                if($LASTEXITCODE -eq 0) {
+                                    Write-Host "[Information] No errors were found."
+                                } elseif ($LASTEXITCODE -eq 1) {
+                                    Write-Host "[Information] Errors were found and fixed."
+                                } elseif ($LASTEXITCODE -eq 2) {
+                                    Write-Host "[Information] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
+                                } elseif ($LASTEXITCODE -eq 3) {
+                                    Write-Host "[Information] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
+                                }
+                                $i++
+                            }
+                        }
                     }
                 }
                 
                 if($SFA_SFC_EXECUTION_FUNCTION_STATUS) {
                     function Run_SFC_Utility_Execution_Function {
-                    
+                        # run sfc
+                        sfc /scannow
+                        
+                        # rough code start
+                        # -wait parameter doesn't work on local system
+                        # if($LASTEXITCODE -eq 0) {
+                        #     $ComputerName = Get-ComputerInfo | Select-Object CsCaption
+                        #     $ComputerName = $ComputerName.CsCaption
+                        #     Import-Module -Name Microsoft.PowerShell.Management
+                        #     Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200
+                        # rough code end
+                        }
                     }
                 }
                 
@@ -129,112 +195,113 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
                 
 
                 # ***************Update Application Sub-Section***************
-
-                function Update_Windows_System_Handle_Function {
-                    # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
-                    Install-Module PSWindowsUpdate
-                    $UpdateVariable = Get-WindowsUpdate
-                    $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
-
-                    # [!] This is working unexpectedly, opposite of expected behaviour [!]
-                    if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
-                        # $UpdateVariable = $False
-                        Write-Host "[*] No Updates were found"
-                    } else {
-                        # $UpdateVariable = $True
-                        Write-Host "[*] Updates found!"
-                        Write-Host "[*] Installing Updates"
-                        
+                if($UA_SYS_UPDATE_FUNCTION_STATUS) {
+                    function Update_Windows_System_Handle_Function {
+                        # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
+                        Install-Module PSWindowsUpdate
+                        $UpdateVariable = Get-WindowsUpdate
+                        $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
+    
+                        # [!] This is working unexpectedly, opposite of expected behaviour [!]
+                        if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
+                            # $UpdateVariable = $False
+                            Write-Host "[*] No Updates were found"
+                        } else {
+                            # $UpdateVariable = $True
+                            Write-Host "[*] Updates found!"
+                            Write-Host "[*] Installing Updates"
+                            
+                        }
                     }
                 }
+                
+                if($UA_STORE_UPDATE_FUNCTION_STATUS) {
+                    function Update_Microsoft_Store_Application_Handle_Function {
 
-                function Update_Microsoft_Store_Application_Handle_Function {
-
+                    }
                 }
+                
+                if($UA_DRIVER_UPDATE_FUNCTION_STATUS) {
+                    function Update_Windows_System_Drivers_Handle_Function {
 
-                function Update_Windows_System_Drivers_Handle_Function {
-
+                    }
                 }
+                
 
                 # ***************END OF -> Update Application Sub-Section***************
 
                 # ***************Network Optimization Sub-Section***************
+                if($NOP_DNS_UPDATE_FUNCTION_STATUS) {
+                    function Change_DNS_Server_Update_Function {
 
-                function Change_DNS_Server_Update_Function {
+                    }
+                }
+                if($NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
+                    function Change_IRP_Stack_Size_Update_Function {
+                    
+                    }
+                }
+                if($NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
+                    function Configure_Background_Applications_Settings_Handle_Function {
+                    
+                    }
+                }
+                if($NOP_LSO_DISABLE_FUNCTION_STATUS) {
+                    function Disable_Large_Send_Offload_Handle_Function {
 
+                    }
                 }
-                function Change_IRP_Stack_Size_Update_Function {
+                if($NOP_ATUN_DISABLE_FUNCTION_STATUS) {
+                    function Disable_Windows_Auto_Tuning_Handle_Function {
                     
+                    }
                 }
-                function Configure_Background_Applications_Settings_Handle_Function {
-                    
-                }
-                function Disable_Large_Send_Offload_Handle_Function {
+                if($NOP_QOS_DISABLE_FUNCTION_STATUS) {
+                    function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
 
+                    }
                 }
-                function Disable_Windows_Auto_Tuning_Handle_Function {
+                if($NOP_P2P_DISABLE_FUNCTION_STATUS) {
+                    function Disable_P2P_Update_Process_Handle_Function {
                     
+                    }
                 }
-                function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
-
-                }
-                function Disable_P2P_Update_Process_Handle_Function {
-                    
-                }
+                
                 # ***************END OF -> Network Optimization Sub-Section***************
 
                 # ***************Memory Resource Optimization Sub-Section***************
+                if($MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
+                    function Run_Disk_Defragmentor_Execution_Function {
 
-                function Run_Disk_Defragmentor_Execution_Function {
-
-                    # Current Date
-                    $CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
-                    # Debugging outputs
-                    Write-Host "Date today is $CurrentDate" -ForegroundColor White -BackgroundColor Blue
-
-                    # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
-                    # display nothing. The docs might tell that. So try block is used to be on the safer side.
-                    try {
-                        $LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname='Application'; id=258} | Select-Object TimeCreated | Select-Object -First 1
+                        
                     }
-                    catch {
-                        Write-Host '[*] Could not find Defrag Logs' -ForegroundColor White -BackgroundColor Red
+                }
+                if($MRO_TEMP_UPDATE_FUNCTION_STATUS) {
+                    function Remove_TEMP_Files_Update_Function {
+                    
                     }
-
-                    # Necessary formatting
-                    $LastDiskOptimizeDate = $LastDiskOptimizeDate -split " " -split "="
-                    $LastDiskOptimizeDate = $LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
-
-                    # Days passed since the disk was optimized
-                    $DaysSinceDiskLastOptimized = New-TimeSpan -Start $LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
-
-                    # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
-                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "{" -split "=" 
-                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
-                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized -split "}"
-                    $DaysSinceDiskLastOptimized = $DaysSinceDiskLastOptimized | Select-Object -First 1
-                    # Debugging outputs
-                    Write-Host "Disk was optimized $DaysSinceDiskLastOptimized days ago" -ForegroundColor White -BackgroundColor Blue
-
-                    # Optimise-Volume Cmdlet will help here
                 }
-                function Remove_TEMP_Files_Update_Function {
+                if($MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
+                    function Set_Increase_Pagefile_Size_Update_Function {
                     
+                    }
                 }
-                function Set_Increase_Pagefile_Size_Update_Function {
-                    
-                }
+                
 
                 # ***************END OF -> Memory Resource Optimization Sub-Section***************
 
                 # ***************Security Audit Sub-Section***************
+                if($SA_DFNDR_DISABLE_EXECUTION_STATUS) {
+                    function Run_Windows_Defender_Scan_Execution_Function {
 
-                function Run_Windows_Defender_Scan_Execution_Function {
-
+                    }
                 }
-                function Analyze_Processes_Handle_Function {
+                if($SA_PR_HANDLE_FUNCTION_STATUS) {
+                    function Analyze_Processes_Handle_Function {
 
+                    }
                 }
+                
                 # more things can be included in this Sub-Section, as it relates to Security
                 # PC can be checked if it is connected to a domain and all security scanning relating to domain can be then applied
 
@@ -243,7 +310,7 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
                 
 
                 # ***************Recommendations Sub-Section***************
-
+                
                 function Generate_Recommendations_Display_Function {
                     # check if the system is connected to an AD Domain, if true then prompt user to check all configurations and security policies
                     # if and only if the user is a part of the Administrators group or is a Domain Controller (DC)
