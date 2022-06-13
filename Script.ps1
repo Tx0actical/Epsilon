@@ -1,4 +1,4 @@
-# ********************Pre-Initialization Section********************
+        # ********************Pre-Initialization Section********************
 
 
 # Get OS version
@@ -9,6 +9,12 @@ $MinimumRequiredPowershellVersion = [PSCustomObject]@{
     Major = 7
     Minor = 2 
 }
+
+        # ********************END OF -> Pre-Initialization Section********************
+
+
+        # ********************Initialization Section********************
+
 
 # Aadditional requirements can be added into the if below as constraints pop up
 if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -and ($HostPowershellVersion.Minor -eq $MinimumRequiredPowershellVersion.Minor)) {
@@ -35,20 +41,14 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
         }
 
 
-        # ********************END OF -> Pre-Initialization Section********************
+        # ********************END OF -> Initialization Section********************
 
 
-        # ********************Initialization Section********************
-
-
-        
-
+        # ********************Post-Initialization Section********************
 
 
         # TO DO: Think about more sources of information for behaviour of Windows Systems
 
-
-        
 
         # Function to keep track of inputs after all node probability determination
         # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
@@ -131,205 +131,213 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
         # ***************END OF -> Base Information Sub-Section***************
 
 
-            Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor White -BackgroundColor Blue
-            if($INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True) {
-                Write-Host "[*] Sub-Section initialization completed" -ForegroundColor White -BackgroundColor Green
+        Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor White -BackgroundColor Blue
+        if($INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True) {
+            Write-Host "[*] Sub-Section initialization completed" -ForegroundColor White -BackgroundColor Green
 
-                # ***************System Files Audit Sub-Section***************
+            # ***************System Files Audit Sub-Section***************
 
-                if($SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
-                    function Run_CHKDSK_Utility_Execution_Function {
-                        
-                        # determine volumes present in the system
-                        # run chkdsk on all those volumes
-                        $Volume = Get-Volume
-                        $VolumeNumber = $Volume.Count
-                        $i = 0
-                        foreach ($Letter in $Volume.DriveLetter) {
-                            if($i -eq $VolumeNumber) {
-                                break
-                            } else {
-                                # run chkdsk on all volumes
-                                Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
-                                # chkdsk "$($Volume.DriveLetter[$i]):" /r
-                                if($LASTEXITCODE -eq 0) {
-                                    Write-Host "[Information] No errors were found."
-                                } elseif ($LASTEXITCODE -eq 1) {
-                                    Write-Host "[Information] Errors were found and fixed."
-                                } elseif ($LASTEXITCODE -eq 2) {
-                                    Write-Host "[Information] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
-                                } elseif ($LASTEXITCODE -eq 3) {
-                                    Write-Host "[Information] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
-                                }
-                                $i++
-                            }
-                        }
-                    }
-                }
-                
-                if($SFA_SFC_EXECUTION_FUNCTION_STATUS) {
-                    function Run_SFC_Utility_Execution_Function {
-                        # run sfc
-                        sfc /scannow
-                        
-                        # rough code start
-                        # -wait parameter doesn't work on local system
-                        # if($LASTEXITCODE -eq 0) {
-                        #     $ComputerName = Get-ComputerInfo | Select-Object CsCaption
-                        #     $ComputerName = $ComputerName.CsCaption
-                        #     Import-Module -Name Microsoft.PowerShell.Management
-                        #     Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200
-                        # rough code end
-                        }
-                    }
-                }
-                
-                if($SFA_DISM_EXECUTION_FUNCTION_STATUS) {
-                    function Run_DISM_Utility_Execution_Function {
-
-                    }
-                }
-
-                # ***************END OF -> System Files Audit Sub-Section***************
-                
-
-                # ***************Update Application Sub-Section***************
-                if($UA_SYS_UPDATE_FUNCTION_STATUS) {
-                    function Update_Windows_System_Handle_Function {
-                        # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
-                        Install-Module PSWindowsUpdate
-                        $UpdateVariable = Get-WindowsUpdate
-                        $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
-    
-                        # [!] This is working unexpectedly, opposite of expected behaviour [!]
-                        if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
-                            # $UpdateVariable = $False
-                            Write-Host "[*] No Updates were found"
+            if($SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
+                function Run_CHKDSK_Utility_Execution_Function {
+                    
+                    # determine volumes present in the system
+                    # run chkdsk on all those volumes
+                    $Volume = Get-Volume
+                    $VolumeNumber = $Volume.Count
+                    $i = 0
+                    foreach ($Letter in $Volume.DriveLetter) {
+                        if($i -eq $VolumeNumber) {
+                            break
                         } else {
-                            # $UpdateVariable = $True
-                            Write-Host "[*] Updates found!"
-                            Write-Host "[*] Installing Updates"
-                            
+                            # run chkdsk on all volumes
+                            Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
+                            # chkdsk "$($Volume.DriveLetter[$i]):" /r
+                            if($LASTEXITCODE -eq 0) {
+                                Write-Host "[Information] No errors were found."
+                            } elseif ($LASTEXITCODE -eq 1) {
+                                Write-Host "[Information] Errors were found and fixed."
+                            } elseif ($LASTEXITCODE -eq 2) {
+                                Write-Host "[Information] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
+                            } elseif ($LASTEXITCODE -eq 3) {
+                                Write-Host "[Information] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
+                            }
+                            $i++
                         }
                     }
                 }
-                
-                if($UA_STORE_UPDATE_FUNCTION_STATUS) {
-                    function Update_Microsoft_Store_Application_Handle_Function {
-
-                    }
-                }
-                
-                if($UA_DRIVER_UPDATE_FUNCTION_STATUS) {
-                    function Update_Windows_System_Drivers_Handle_Function {
-
-                    }
-                }
-                
-
-                # ***************END OF -> Update Application Sub-Section***************
-
-                # ***************Network Optimization Sub-Section***************
-                if($NOP_DNS_UPDATE_FUNCTION_STATUS) {
-                    function Change_DNS_Server_Update_Function {
-
-                    }
-                }
-                if($NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
-                    function Change_IRP_Stack_Size_Update_Function {
+            }
+            
+            if($SFA_SFC_EXECUTION_FUNCTION_STATUS) {
+                function Run_SFC_Utility_Execution_Function {
+                    # run sfc
+                    sfc /scannow
                     
+                    # rough code start
+                    # -wait parameter doesn't work on local system
+                    # if($LASTEXITCODE -eq 0) {
+                    #     $ComputerName = Get-ComputerInfo | Select-Object CsCaption
+                    #     $ComputerName = $ComputerName.CsCaption
+                    #     Import-Module -Name Microsoft.PowerShell.Management
+                    #     Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200
+                    # rough code end
                     }
                 }
-                if($NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
-                    function Configure_Background_Applications_Settings_Handle_Function {
-                    
-                    }
-                }
-                if($NOP_LSO_DISABLE_FUNCTION_STATUS) {
-                    function Disable_Large_Send_Offload_Handle_Function {
+            }
+            
+            if($SFA_DISM_EXECUTION_FUNCTION_STATUS) {
+                function Run_DISM_Utility_Execution_Function {
 
-                    }
                 }
-                if($NOP_ATUN_DISABLE_FUNCTION_STATUS) {
-                    function Disable_Windows_Auto_Tuning_Handle_Function {
-                    
-                    }
-                }
-                if($NOP_QOS_DISABLE_FUNCTION_STATUS) {
-                    function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
+            }
 
-                    }
-                }
-                if($NOP_P2P_DISABLE_FUNCTION_STATUS) {
-                    function Disable_P2P_Update_Process_Handle_Function {
-                    
-                    }
-                }
-                
-                # ***************END OF -> Network Optimization Sub-Section***************
+            # ***************END OF -> System Files Audit Sub-Section***************
 
-                # ***************Memory Resource Optimization Sub-Section***************
-                if($MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
-                    function Run_Disk_Defragmentor_Execution_Function {
+            # ***************Update Application Sub-Section***************
 
+            if($UA_SYS_UPDATE_FUNCTION_STATUS) {
+                function Update_Windows_System_Handle_Function {
+                    # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
+                    Install-Module PSWindowsUpdate
+                    $UpdateVariable = Get-WindowsUpdate
+                    $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
+
+                    # [!] This is working unexpectedly, opposite of expected behaviour [!]
+                    if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
+                        # $UpdateVariable = $False
+                        Write-Host "[*] No Updates were found"
+                    } else {
+                        # $UpdateVariable = $True
+                        Write-Host "[*] Updates found!"
+                        Write-Host "[*] Installing Updates"
                         
                     }
                 }
-                if($MRO_TEMP_UPDATE_FUNCTION_STATUS) {
-                    function Remove_TEMP_Files_Update_Function {
-                    
-                    }
-                }
-                if($MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
-                    function Set_Increase_Pagefile_Size_Update_Function {
-                    
-                    }
-                }
-                
-
-                # ***************END OF -> Memory Resource Optimization Sub-Section***************
-
-                # ***************Security Audit Sub-Section***************
-                if($SA_DFNDR_DISABLE_EXECUTION_STATUS) {
-                    function Run_Windows_Defender_Scan_Execution_Function {
-
-                    }
-                }
-                if($SA_PR_HANDLE_FUNCTION_STATUS) {
-                    function Analyze_Processes_Handle_Function {
-
-                    }
-                }
-                
-                # more things can be included in this Sub-Section, as it relates to Security
-                # PC can be checked if it is connected to a domain and all security scanning relating to domain can be then applied
-
-                # ***************END OF -> Security Audit Sub-Section***************
-
-                
-
-                # ***************Recommendations Sub-Section***************
-                
-                function Generate_Recommendations_Display_Function {
-                    # check if the system is connected to an AD Domain, if true then prompt user to check all configurations and security policies
-                    # if and only if the user is a part of the Administrators group or is a Domain Controller (DC)
-                }
-
-                # ***************END OF -> Recommendations Sub-Section***************
-
-            } else {
-                Write-Host "[*] Sub-Section initialization failed" -ForegroundColor White -BackgroundColor Red 
             }
-            # if the value of $MASTER_INPUT_DISPATCH_CENTER_FUNCTION_STATUS is set to true then control-flow will continue
-            # that will happen only when the Base Information Sub-Section is properly initialized. Hence, this variable acts as a checker.
+            
+            if($UA_STORE_UPDATE_FUNCTION_STATUS) {
+                function Update_Microsoft_Store_Application_Handle_Function {
+
+                }
+            }
+            
+            if($UA_DRIVER_UPDATE_FUNCTION_STATUS) {
+                function Update_Windows_System_Drivers_Handle_Function {
+
+                }
+            }
+
+            # ***************END OF -> Update Application Sub-Section***************
+
+            # ***************Network Optimization Sub-Section***************
+
+            if($NOP_DNS_UPDATE_FUNCTION_STATUS) {
+                function Change_DNS_Server_Update_Function {
+
+                }
+            }
+            if($NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
+                function Change_IRP_Stack_Size_Update_Function {
+                
+                }
+            }
+            if($NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
+                function Configure_Background_Applications_Settings_Handle_Function {
+                
+                }
+            }
+            if($NOP_LSO_DISABLE_FUNCTION_STATUS) {
+                function Disable_Large_Send_Offload_Handle_Function {
+
+                }
+            }
+            if($NOP_ATUN_DISABLE_FUNCTION_STATUS) {
+                function Disable_Windows_Auto_Tuning_Handle_Function {
+                
+                }
+            }
+            if($NOP_QOS_DISABLE_FUNCTION_STATUS) {
+                function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
+
+                }
+            }
+            if($NOP_P2P_DISABLE_FUNCTION_STATUS) {
+                function Disable_P2P_Update_Process_Handle_Function {
+                
+                }
+            }
+
+            # ***************END OF -> Network Optimization Sub-Section***************
+
+            # ***************Memory Resource Optimization Sub-Section***************
+
+            if($MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
+                function Run_Disk_Defragmentor_Execution_Function {
+
+                    
+                }
+            }
+            if($MRO_TEMP_UPDATE_FUNCTION_STATUS) {
+                function Remove_TEMP_Files_Update_Function {
+                
+                }
+            }
+            if($MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
+                function Set_Increase_Pagefile_Size_Update_Function {
+                
+                }
+            }
+
+            # ***************END OF -> Memory Resource Optimization Sub-Section***************
+
+            # ***************Security Audit Sub-Section***************
+            if($SA_DFNDR_DISABLE_EXECUTION_STATUS) {
+                function Run_Windows_Defender_Scan_Execution_Function {
+
+                }
+            }
+            if($SA_PR_HANDLE_FUNCTION_STATUS) {
+                function Analyze_Processes_Handle_Function {
+
+                }
+            }
+            
+            # more things can be included in this Sub-Section, as it relates to Security
+            # PC can be checked if it is connected to a domain and all security scanning relating to domain can be then applied
+
+            # ***************END OF -> Security Audit Sub-Section***************
+
+            # ***************Recommendations Sub-Section***************
+            
+            function Generate_Recommendations_Display_Function {
+                # check if the system is connected to an AD Domain, if true then prompt user to check all configurations and security policies
+                # if and only if the user is a part of the Administrators group or is a Domain Controller (DC)
+            }
+
+            # ***************END OF -> Recommendations Sub-Section***************
+
+
+        # ********************END OF -> Post-Initialization Section********************
+
+
+        } else {
+            Write-Host "[*] Probabilistic Activation Determination Sub-Section initialization failed" -ForegroundColor White -BackgroundColor Red 
         }
+        # if the value of $MASTER_INPUT_DISPATCH_CENTER_FUNCTION_STATUS is set to true then control-flow will continue
+        # that will happen only when the Base Information Sub-Section is properly initialized. Hence, this variable acts as a checker.
 
 
+        
 
-        # ***************Probabilistic Activation Determination (PAD) Sub-Section***************
+        # ********************Probabilistic Activation Determination (PAD) Section********************
 
 
-        # *****Part-1 of PAD Sub-Section*****
+        # Functions within this section provides input to the section containing the __Input_Dispatch_Center_Control_Function__ function. Earlier, this Section was a Sub-section
+        # (until commit -> 27bb259), but it has been converted because it essentially computes values and pass it to __Input_Dispatch_Center_Control_Function__ function which ACTUALLY
+        # does the changes described in that. So, a Section giving input to itself isn't a great idea - it wouldn't affect the functioning of code per se, because these functions are divided
+        # into the so-called 'Sections and Sub-Sections' on the basis of comments just to keep track of complexity - as it might be a source of confusion. 
+
+
+            # ***************PAD Sub-Section-1***************
 
         # Determining probabilities
         function Compute_BSOD_Probability_Handle_Function {
@@ -359,9 +367,10 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
             # Event log is the source of information
         }
 
-        # *****END OF -> Part-1 of PAD Sub-Section*****
+            # ***************END OF -> PAD Sub-Section-1***************
 
-        # *****Part-2 of PAD Sub-Section*****
+            # ***************PAD Sub-Section-2***************
+
         function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
             # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
             # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
@@ -377,8 +386,10 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
             __Input_Dispatch_Center_Control_Function__
         }
 
+            # ***************END OF -> PAD Sub-Section-2***************
 
-        # *****END OF -> Part-2 of PAD Sub-Section*****
+
+        # ********************Output Handling Section********************
 
 
         # Output function will collect exit codes from all executed,
@@ -396,11 +407,15 @@ if(($HostPowershellVersion.Major -eq $MinimumRequiredPowershellVersion.Major) -a
         function Set_Ready_For_Final_Restart_Handle_Function {
 
         }
-    } 
 
 
-    # ********************END OF -> Initialization Section********************
+        # ********************END OF -> Output Handling Section********************
 
+
+    } else {
+        Write-Host "[!] You don't have the compatible Windows version to run this script"
+        Write-Host "[*] Exiting..."
+    }
 
 } else {
     Write-Host "[!] You need atleast PowerShell 7.2 to run this script" -ForegroundColor White -BackgroundColor Blue
