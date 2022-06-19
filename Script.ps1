@@ -370,21 +370,6 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
                     # &&&&&&&&&& Method 2 &&&&&&&&&&
 
-                    # Get-WmiObject Win32_PnPSignedDriver | Where-Object {$_.devicename -eq 'Intel(R) Ethernet Connection (7) I219-LM'} | ForEach-Object {
-                    #     if ([Version]$_.Driverversion -ge [Version]'12.17.8.9') {  
-                    #         Write-Output "Version is Current"
-                    #         # return from a function ?
-                    #         # return 0
-                    #         # exit script with exitcode?
-                    #         # exit 0
-                    #     } 
-                    #     else {
-                    #         Start-Process -FilePath "\\servername\share\share\Dell\Drivers\Dell 3630\Network Card\setup.exe" -ArgumentList '/s' -Wait -NoNewWindow
-                    #     }
-                    # }
-                    
-                    # &&&&&&&&&& Method 3 &&&&&&&&&&
-
                     # Beginning of the script
                     # If the PowerShell Modules Folder is non-existing, it will be created.
                     if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
@@ -416,14 +401,19 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                             Write-Output '[*] Skipped modifying registry keys' -ForegroundColor White -BackgroundColor Blue
                         }
                     }
+
                     # Add ServiceID for Windows Update
                     Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
+
                     # Pause and give the service time to update
                     Start-Sleep 30
+
                     # Scan against Microsoft, accepting all drivers
                     Get-WUInstall -MicrosoftUpdate -AcceptAll
+
                     # Scaning against Microsoft for all Driver types, and accepting all
                     Get-WUInstall -MicrosoftUpdate Driver -AcceptAll
+                    
                     # Scanning against Microsoft for all Software Updates, and installing all, ignoring a reboot
                     Get-WUInstall -MicrosoftUpdate Software -AcceptAll -IgnoreReboot
 
