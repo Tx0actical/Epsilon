@@ -4,15 +4,10 @@
         # If the value is set, then the script will continue from where it left off (addtional logic will be required to do that).
         # If the value is not set, then the script will start from the beginning.
 
-        # &&&&&&&&&& OR &&&&&&&&&&
-
-        # The restart can be handled in the end after the output dispatch center gives a green light after the result of all the functions are determined. In the meantime, restarts can be kept pending.
-        # That would save a lot of extra code. But if certain operation requires immediate restart to complete, then this section might have a relevance, till then this is commeted.
-
-        # function Query_Registry_For_Mid_Execution_Restart_Handle_Function {
-        #     # if it is determined that restart has occured, then control will directly jump to the function after the function which called the restart.
-        #     # else run script from start.
-        # }
+        function Query_Registry_For_Mid_Execution_Restart_Handle_Function {
+            # if it is determined that restart has occured, then control will directly jump to the function after the function which called the restart.
+            # else run script from start.
+        }
 
         # ********************END OF -> Zero Section********************
         
@@ -22,7 +17,7 @@
 # Get OS version
 $Global:HostOSVersion = Get-ComputerInfo | Select-Object WindowsProductName
 $Global:HostPowershellVersion = $PSVersionTable.PSVersion 
-$Global:IncompatibleOSVersion = @('Windows Server 2012', 'Windows Server 2008 R2', 'Windows 8.1')
+$Global:IncompatibleOSVersion = @('Windows Server 2012',' Windows Server 2008 R2','Windows 8.1')
 $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
     Major = 7
     Minor = 2 
@@ -33,62 +28,18 @@ $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
 
         # ********************Initialization Section********************
 
-$Global:CurrentDate                                     = $null
-$Global:LastDiskOptimizeDate                            = $null
-$Global:DaysSinceDiskLastOptimized                      = $null
-$Global:VolumeNumber                                    = $null
-$Global:LastAbruptSytemRebootDate                       = $null
-
-$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS    = $null
-
-$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS            = $null
-$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS               = $null
-$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS              = $null
-$Global:UA_SYS_UPDATE_FUNCTION_STATUS                   = $null
-$Global:UA_STORE_UPDATE_FUNCTION_STATUS                 = $null
-$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                = $null
-$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                  = $null
-$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                = $null
-$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS              = $null
-$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                 = $null
-$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                = $null
-$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                 = $null
-$Global:NOP_P2P_DISABLE_FUNCTION_STATUS                 = $null
-$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS              = $null
-$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                 = $null
-$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS           = $null
-$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS               = $null
-$Global:SA_PR_HANDLE_FUNCTION_STATUS                    = $null
-
-$Global:Output_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   = $null
-
-$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED           = $null
-$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED              = $null
-$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED             = $null
-$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED        = $null
-$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED       = $null
-$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED   = $null
-$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED             = $null
-$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED= $null
-$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED         = $null
-
-$Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS            = $null
+$Global:CurrentDate = $null
+$Global:LastDiskOptimizeDate = $null
+$Global:DaysSinceDiskLastOptimized = $null
+$Global:VolumeNumber = $null
+$Global:LastAbruptSytemRebootDate = $null
 
 
 # Aadditional requirements can be added into the if below as constraints pop up
 if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVersion.Major) -and ($Global:HostPowershellVersion.Minor -eq $Global:MinimumRequiredPowershellVersion.Minor)) {
     if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
-        Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
-        Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur." -ForegroundColor White -BackgroundColor Blue
+        Write-Host "[*] Intializing System-Wide Optimization (SWO) Script."
+        Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur."
 
         # # Import user module
         # Import-Module -Name Microsoft.PowerShell.LocalAccounts
@@ -109,11 +60,7 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
         # }
         
         # if the user runs the code as administrator then the above code will not be required. But a self elevating script can be used.
-        # That way, the user can elevate itself to admin, utilizing a credential prompt (Get-Credential), if not, if the user is admin then, the script will execute all the code below.
-        
-        # If the required version of powershell is not present in the host system, then the user can be prompted to install it. A choice can be given to the user.
-        # If the user chooses to install it, then the script will install it otherwise, the script can return the incompatibility message and exit.
-
+        # That way, the user can elevate itself to admin, if not, if the user is admin then, the script will execute all the code below.
 
         # ********************END OF -> Initialization Section********************
 
@@ -128,34 +75,41 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
         # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
         # where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
         # [Parameter(Mandatory = $True)] flag can be used to determine which function was not assigned a value by the sectional functions
-        # and that may provide necessary debug information and provide necessary checks during script execution.
+        # and that may provide necessary debug information.
+
+        # if the system needs to be restarted in between the function. A key must be added to registry indicating that the script must run again after the restart
+        # there should be a mechanism to continue the script after the restart, from where the restart was triggered. Either the script can have a dedicated function
+        # that will be responsible for the in-between restart. It can set the registry key to indicate that the script must run again after the restart (only one time).
+        # a second registry key will save the state of the script before the restart (or a file can be used). Then, the function will resume the script from where it left
+        # off, by reading the state either from the registry or from the file. The function will have to redirect execution to function next to the function that caused the 
+        # restart.
 
 
         function __Input_Dispatch_Center_Control_Function__ { # meaning of cmdletbinding() ?
             [CmdletBinding()] param(
-                [Parameter(Position = 0, Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
-                [Parameter(Position = 1, Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 2, Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 3, Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 0)] [Parameter(Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
+                [Parameter(Position = 1)] [Parameter(Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 2)] [Parameter(Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 3)] [Parameter(Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS,
 
-                [Parameter(Position = 4, Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 5, Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 6, Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 4)] [Parameter(Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 5)] [Parameter(Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 6)] [Parameter(Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS,
 
-                [Parameter(Position = 7, Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 8, Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 8, Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
-                [Parameter(Position = 9, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_P2P_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 7)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 8)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 8)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
+                [Parameter(Position = 9)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 10)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 11)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 12)] [Parameter(Mandatory = $True)] [bool] $Global:NOP_P2P_DISABLE_FUNCTION_STATUS,
 
-                [Parameter(Position = 13, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 13)] [Parameter(Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 14)] [Parameter(Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 15)] [Parameter(Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS,
 
-                [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS,
-                [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
+                [Parameter(Position = 16)] [Parameter(Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS,
+                [Parameter(Position = 17)] [Parameter(Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
             )
 
 
@@ -257,7 +211,6 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                             $i++
                         }
                     }
-                    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
                 }
             }
             
@@ -274,13 +227,13 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                     #     Import-Module -Name Microsoft.PowerShell.Management
                     #     Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200
                     # rough code end
-                    $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
+                    }
                 }
             }
             
             if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
                 function Run_DISM_Utility_Execution_Function {
-                    $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
+
                 }
             }
 
@@ -303,7 +256,6 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                         # $UpdateVariable = $True
                         Write-Host "[*] Updates found, installing them"
                     }
-                    $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
                 }
             }
             
@@ -313,12 +265,11 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                     Write-Host "[*] Checking Microsoft Store Application updates"
                     $UpdateCheck = winget upgrade
                     if($null -eq $UpdateCheck) {
-                        Write-Host "[*] No updates were found" 
+                        Write-Host "[*] No updates were found"
                     } else {
                         Write-Host "[*] Updates found, installing them"
                         winget upgrade --all
                     }
-                    $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
                 }
             }
             
@@ -338,12 +289,12 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                     # $Searcher.ServiceID = '7971f918-a847-4430-9279-4a52d1efe18d'
                     # $Searcher.SearchScope =  1 # MachineOnly
                     # $Searcher.ServerSelection = 3 # Third Party
-
+                            
                     # $Criteria = "IsInstalled=0 and Type='Driver'"
                     # Write-Host('Searching Driver-Updates...') -Fore Green     
                     # $SearchResult = $Searcher.Search($Criteria)          
                     # $Updates = $SearchResult.Updates
-
+                        
                     # #Show available Drivers...
                     # $Updates | Select-Object Title, DriverModel, DriverVerDate, Driverclass, DriverManufacturer | Format-List
 
@@ -413,7 +364,7 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                             Set-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -Value $null -ErrorAction SilentlyContinue
                         }
                         catch {
-                            Write-Output '[*] Skipped modifying registry keys' -ForegroundColor White -BackgroundColor Blue
+                            Write-Output 'Skipped modifying registry keys'
                         }
                     }
                     # Add ServiceID for Windows Update
@@ -426,8 +377,6 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                     Get-WUInstall -MicrosoftUpdate Driver -AcceptAll
                     # Scanning against Microsoft for all Software Updates, and installing all, ignoring a reboot
                     Get-WUInstall -MicrosoftUpdate Software -AcceptAll -IgnoreReboot
-
-                    $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
                 }
             }
 
@@ -448,38 +397,36 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
                     # clear DNS cache
                     Clear-DnsClientCache
-
-                    $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
                 }
             }
             if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
                 function Change_IRP_Stack_Size_Update_Function {
-                    $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
+                    
                 }
             }
             if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
                 function Configure_Background_Applications_Settings_Handle_Function {
-                    $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
+                
                 }
             }
             if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
                 function Disable_Large_Send_Offload_Handle_Function {
-                    $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
+
                 }
             }
             if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
                 function Disable_Windows_Auto_Tuning_Handle_Function {
-                    $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
+                
                 }
             }
             if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
                 function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
-                    $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
+
                 }
             }
             if($Global:NOP_P2P_DISABLE_FUNCTION_STATUS) {
                 function Disable_P2P_Update_Process_Handle_Function {
-                    $Global:SET_NOP_P2P_NODE_RESULT_DETERMINED = $True
+                
                 }
             }
 
@@ -489,17 +436,18 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
             if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
                 function Run_Disk_Defragmentor_Execution_Function {
-                    $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
+
+                    
                 }
             }
             if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
                 function Remove_TEMP_Files_Update_Function {
-                    $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
+                
                 }
             }
             if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
                 function Set_Increase_Pagefile_Size_Update_Function {
-                    $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
+                
                 }
             }
 
@@ -508,12 +456,12 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             # ***************Security Audit Sub-Section***************
             if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
                 function Run_Windows_Defender_Scan_Execution_Function {
-                    $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
+
                 }
             }
             if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
                 function Analyze_Processes_Handle_Function {
-                    $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
+
                 }
             }
             
@@ -559,19 +507,9 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
         function Compute_BSOD_Probability_Handle_Function {
             # This calculates probability of BSOD events
             # It does so by calculating the number of kernel-power failures leading to abrupt reboots
-
-            # ^^^^^^^^^^^^^^^IMPORTANT NOTE^^^^^^^^^^^^^^^^
-
-            # Determining exact cause of BSOD is not objective, there might be a faulty kernel-mode driver, there might be hardware failure, possibilities are very large.
-            # A rigorous analysis of a stop error or BSOD is beyond the scope of this script as it requires advanced troubleshooting techniques by investigating crash dump files using the kernel debugger (kd).
-            # This script only analyses system behaviour and tries to determine the cause of the crash.
-
-            # ^^^^^^^^^^^^^^^END OF -> IMPORTANT NOTE^^^^^^^^^^^^^^^^
-
             try {
                 $Global:LastAbruptSytemRebootDate = Get-WinEvent -FilterHashtable @{logname="System"; id=41} | Select-Object TimeCreated
-                # include additional events
-
+                
                 # Logic is pending!
                 if($Global:LastAbruptSytemRebootDate.Count) {
 
@@ -602,15 +540,12 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
             # fix a particular type of error, in this case a BSOD
 
-            Write-Host "[*] Checking if BSOD is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
-
             # call to IDCC Function
             __Input_Dispatch_Center_Control_Function__
         }
         function Determine_Memory_Fixing_Parameters_Activation_Handle_Function {
             # this function determines
 
-            Write-Host "[*] Checking if Bad Memory is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
             # call to IDCC Function
             __Input_Dispatch_Center_Control_Function__
         }
@@ -625,46 +560,15 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
         # functions and will give a green light when all are boolean true
         # after that the system might proceed to restart for a final time
 
-        function __Output_Dispatch_Center_Control_Function__ {
+        function __Output_Dispatch_Center_Update_Function__ {
             # if all functions determine their outputs successfully, then this function will set the
             # $Global:Output_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
             # This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system.
-
-            if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
-
-                if($Global:SET_UA_SYS_NODE_RESULT_DETERMINED -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED) {
-
-                    if($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED) {
-
-                        if($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED) {
-
-                            if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
-
-                                # if all the above are true then the system will be ready for final restart and $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS will be set to true
-                                $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS = $true
-                            } else {
-                                Write-Host "[!] Security Audit Section Failed" -ForegroundColor White -BackgroundColor Red
-                            }
-                        } else {
-                            Write-Host "[!] Memory Resource Optimization Section Failed" -ForegroundColor White -BackgroundColor Red
-                        }
-                    } else {
-                        Write-Host "[!] Network Optimization Section Failed" -ForegroundColor White -BackgroundColor Red
-                    }
-                } else {
-                    Write-Host "[!] Update Application Section Failed" -ForegroundColor White -BackgroundColor Red
-                }
-            } else {
-                Write-Host "[!] System Files Section Failed" -ForegroundColor White -BackgroundColor Red
-            }
         }
 
         # When everything is okay, system will restart for finally although this behaviour can be updated
         # because of potiential restarts in between the script. For eg., when the system updates some 
         # registry values, among other things. That might be a pain for the user.
-
-        # Another version to handle restart-needed-to-apply-changes, is to postpone the restart until all the operations are
-        # completed and then restarting the system, instead of restarting the system right away, in the middle of script execution.
 
         function Set_Ready_For_Final_Restart_Handle_Function {
             [CmdletBinding()] param(
@@ -680,15 +584,13 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
         # ********************END OF -> Output Handling Section********************
 
-    
-    }
-    
+
     } else {
-        Write-Host "[!] The script can't run on Windows Server 2012, Windows Server 2008 R2 and Windows 8.1" -ForegroundColor White -BackgroundColor Red
-        Write-Host "[*] Exiting..." -ForegroundColor White -BackgroundColor Blue
+        Write-Host "[!] The script can't run on Windows Server 2012, Windows Server 2008 R2 and Windows 8.1"
+        Write-Host "[*] Exiting..."
     }
 
 } else {
-    Write-Host "[!] You need atleast PowerShell 7.2 to run this script" -ForegroundColor White -BackgroundColor Red
-    Write-Host "[*] Exiting..." -ForegroundColor White -BackgroundColor Blue
+    Write-Host "[!] You need atleast PowerShell 7.2 to run this script"
+    Write-Host "[*] Exiting..."
 }
