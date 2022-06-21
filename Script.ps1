@@ -39,6 +39,7 @@ $Global:DaysSinceDiskLastOptimized                      = $null
 $Global:VolumeNumber                                    = $null
 $Global:LastAbruptSytemRebootDate                       = $null
 
+
 $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS    = $null
 
 $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS            = $null
@@ -60,7 +61,8 @@ $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS           = $null
 $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS               = $null
 $Global:SA_PR_HANDLE_FUNCTION_STATUS                    = $null
 
-$Global:Output_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   = $null
+
+$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   = $null
 
 $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED           = $null
 $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED              = $null
@@ -80,8 +82,6 @@ $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED      = $null
 $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED= $null
 $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED     = $null
 $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED         = $null
-
-$Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS            = $null
 
 
 # Aadditional requirements can be added into the if below as constraints pop up
@@ -144,18 +144,18 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
                 [Parameter(Position = 7, Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
                 [Parameter(Position = 8, Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 8, Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
-                [Parameter(Position = 9, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
-                [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_P2P_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 9, Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
+                [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
+                [Parameter(Position = 13, Mandatory = $True)] [bool] $Global:NOP_P2P_DISABLE_FUNCTION_STATUS,
 
-                [Parameter(Position = 13, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS,
 
-                [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS,
-                [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
+                [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS,
+                [Parameter(Position = 18, Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
             )
 
 
@@ -545,62 +545,80 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
             # ***************PAD Sub-Section-1***************
 
-        # Determining probabilities
-        function Compute_BSOD_Probability_Handle_Function {
-            # This calculates probability of BSOD events
-            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
+        # Individul Perceptrons to determine activation of functions depending upon the number of contributing factors
+        function Invoke_Perceptron_For_Stop_Error_Parameters_Activation_Determination_Function {
+            # This function determines activations of specific functions that might help resolve stop errors.
+            # The inputs will be the number of events that have been detected with respect to stop errors, which will be fetched from the Windows Event Logs.
+            # The weights will be the impact of a function in resolving the problem. Higher impact functions will have more weight.
 
-            # ^^^^^^^^^^^^^^^IMPORTANT NOTE^^^^^^^^^^^^^^^^
+            # Bad driver configuration, Software updates, Hardware failures, Memory failures, Power failures, Disk Errors might be the cause.
 
-            # Determining exact cause of BSOD is not objective, there might be a faulty kernel-mode driver, there might be hardware failure, possibilities are very large.
-            # A rigorous analysis of a stop error or BSOD is beyond the scope of this script as it requires advanced troubleshooting techniques by investigating crash dump files using the kernel debugger (kd).
-            # This script only analyses system behaviour and tries to determine the cause of the crash.
+            Write-Host "[*] Checking if StopError is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
 
-            # ^^^^^^^^^^^^^^^END OF -> IMPORTANT NOTE^^^^^^^^^^^^^^^^
-
-            try {
-                $Global:LastAbruptSytemRebootDate = Get-WinEvent -FilterHashtable @{logname="System"; id=41} | Select-Object TimeCreated
-                # include additional events
-
-                # Logic is pending!
-                if($Global:LastAbruptSytemRebootDate.Count) {
-
-                }
-            }
-            catch {
-                Write-Host "[!] Could not find Defrag Logs" -ForegroundColor White -BackgroundColor Red
-            }
+            
         }
-        function Compute_Memory_Failure_Probability_Handle_Function {
-            # This calculates probility of memory failures happening
+
+        function Invoke_Perceptron_For_Memory_Opmitization_Parameters_Activation_Determination_Function {
+            # This function determines activations of specific functions that might help troubleshoot and optimize memory.
+
+            # Can close unused appications that are left open for a long time, unused. Or this section can be binned if no controls were found to achieve the desired results.
+            Write-Host "[*] Checking if memory optimization is needed" -ForegroundColor White -BackgroundColor Blue
+
+            # Can check for memory failues, by using Windows Memory Diagnostics.
+            Write-Host "[*] Checking if memory failures if a problem vector" -ForegroundColor White -BackgroundColor Blue
         }
-        function Compute_Security_Related_Stuff_Handle_Function {
+
+        function Invoke_Perceptron_For_Security_Audit_Parameters_Activation_Determination_Function {
+            # This function will check if relevant security controls are present like Windows Defender logs, or logs generated by third-party AV software, wether or not scanning is done.
+            # This might include system updates and other parameters related to security. And the most relevant functions that can solve the problem will be assigned higher weights.
+            Write-Host "[*] Checking if system wide security controls are present" -ForegroundColor White -BackgroundColor Blue
 
         }
-        function Compute_BSOD_Probability_Handle_Function {
-            # This calculates probability of BSOD events
-            # It does so by calculating the number of kernel-power failures leading to abrupt reboots
-            # Event log is the source of information
+
+        function Invoke_Perceptron_For_Network_Opmitization_Parameters_Activation_Determination_Function {
+            # This function will evaluate the network connection and performance, and try to optimize them.
+            # Input parameters can be connection speed, or simply the presence of parameters that 
         }
+
+        # **************Function Call Sub-Section***************
+
+        
+        
+        # **************END OF -> Function Call Sub-Section***************
+        
+
+        # ^^^^^^^^^^^^^^^IMPORTANT NOTE^^^^^^^^^^^^^^^^
+
+        # Determining exact cause of StopError is not procedural, there might be a faulty kernel-mode driver, there might be hardware failure, possibilities are very large.
+        # A rigorous analysis of a stop error or StopError is beyond the scope of this script as it requires advanced troubleshooting techniques by investigating crash dump files using the kernel debugger (kd).
+        # This script only analyses system behaviour and tries to determine the cause of the crash.
+
+        # ^^^^^^^^^^^^^^^END OF -> IMPORTANT NOTE^^^^^^^^^^^^^^^^
+
 
             # ***************END OF -> PAD Sub-Section-1***************
 
             # ***************PAD Sub-Section-2***************
 
-        function Determine_BSOD_Fixing_Parameters_Activation_Handle_Function {
-            # here parameters mean which functions are required to be called in case Part-1 of PAD has determined BSOD events 
-            # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
-            # fix a particular type of error, in this case a BSOD
+        # The reason why separate functions are required to pass the values to __Input_Dispatch_Center_Control_Function__ when it can be done right within the Perceptron functions is because all the issues require
+        # their own separate result and that is possible by having separate functions of handling each issue.
 
-            Write-Host "[*] Checking if BSOD is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
+        function Forward_StopError_Fixing_Parameters_Fowarding_Function {
+            # here parameters mean which functions are required to be called in case Part-1 of PAD has determined StopError events 
+            # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
+            # fix a particular type of error, in this case a StopError
+
+            # This function will take input from the Perceptron that determines the activation of the functions
+            
+            Write-Host "[*] One of the problems were found out to be Stop Errors resulting in system crashes" -ForegroundColor White -BackgroundColor Blue
 
             # call to IDCC Function
             __Input_Dispatch_Center_Control_Function__
         }
-        function Determine_Memory_Fixing_Parameters_Activation_Handle_Function {
+        function Forward_Memory_Fixing_Parameters_Fowarding_Function {
             # this function determines
 
-            Write-Host "[*] Checking if Bad Memory is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
+            Write-Host "[*] One of the problems were found out to be Bad memory" -ForegroundColor White -BackgroundColor Blue
             # call to IDCC Function
             __Input_Dispatch_Center_Control_Function__
         }
@@ -617,7 +635,7 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
         function __Output_Dispatch_Center_Control_Function__ {
             # if all functions determine their outputs successfully, then this function will set the
-            # $Global:Output_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
+            # $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
             # This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system.
 
             if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
@@ -631,7 +649,7 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                             if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
 
                                 # if all the above are true then the system will be ready for final restart and $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS will be set to true
-                                $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS = $true
+                                $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS = $True
                             } else {
                                 Write-Host "[!] Security Audit Section Failed" -ForegroundColor White -BackgroundColor Red
                             }
@@ -649,6 +667,12 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             }
         }
 
+        # **************Function Call Sub-Section***************
+
+        __Output_Dispatch_Center_Control_Function__ 
+
+        # **************END OF -> Function Call Sub-Section***************
+
         # When everything is okay, system will restart for finally although this behaviour can be updated
         # because of potiential restarts in between the script. For eg., when the system updates some 
         # registry values, among other things. That might be a pain for the user.
@@ -658,14 +682,20 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
         function Set_Ready_For_Final_Restart_Handle_Function {
             [CmdletBinding()] param(
-                [Parameter(Mandatory=$true, Position=0)] [bool] $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS
+                [Parameter(Mandatory=$true, Position=0)] [bool] $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
             )
             
-            if($Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS) {
+            if($Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS) {
                 # restart the system
-
+                shutdown -r -t 0
             }
         }
+
+        # **************Function Call Sub-Section***************
+
+        Set_Ready_For_Final_Restart_Handle_Function
+
+        # **************END OF -> Function Call Sub-Section***************
 
 
         # ********************END OF -> Output Handling Section********************
