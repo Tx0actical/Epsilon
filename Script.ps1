@@ -90,23 +90,23 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
         Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
         Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur." -ForegroundColor White -BackgroundColor Blue
 
-        # # Import user module
-        # Import-Module -Name Microsoft.PowerShell.LocalAccounts
-        # # Import current user profile
-        # $CurrentUser = whoami.exe
-        # # Get members of administrators group
-        # $IsAdmin = Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name
+        # Import user module
+        Import-Module -Name Microsoft.PowerShell.LocalAccounts
+        # Import current user profile
+        $CurrentUser = whoami.exe
+        # Get members of administrators group
+        $IsAdmin = Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name
 
-        # # Check if user is Admin and act accordingly
-        # if ($IsAdmin -Contains $CurrentUser) {
-        #     # Spawn PowerShell with $CurrentUser privileges
-        #     Start-Process -FilePath "powershell" -Verb RunAs
-        #     # Modify ExecutionPolicy to run scripts
-        #     Set-ExecutionPolicy -ExecutionPolicy Bypass
-        # }
-        # else {
-        #     Write-Host "[!] Admin privileges required"  # can write Write-Error or something like that
-        # }
+        # Check if user is Admin and act accordingly
+        if ($IsAdmin -Contains $CurrentUser) {
+            # Spawn PowerShell with $CurrentUser privileges
+            Start-Process -FilePath "powershell" -Verb RunAs
+            # Modify ExecutionPolicy to run scripts
+            Set-ExecutionPolicy -ExecutionPolicy Bypass
+        }
+        else {
+            Write-Host "[!] Admin privileges required"  # can write Write-Error or something like that
+        }
         
         # if the user runs the code as administrator then the above code will not be required. But a self elevating script can be used.
         # That way, the user can elevate itself to admin, utilizing a credential prompt (Get-Credential), if not, if the user is admin then, the script will execute all the code below.
@@ -686,6 +686,9 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             )
             
             if($Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS) {
+                # set execution policy to default before final shutdown
+                Set-ExecutionPolicy -ExecutionPolicy Default
+
                 # restart the system
                 shutdown -r -t 0
             }
