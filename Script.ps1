@@ -33,55 +33,55 @@ $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
 
         # ********************Initialization Section********************
 
-$Global:CurrentDate                                     = $null
-$Global:LastDiskOptimizeDate                            = $null
-$Global:DaysSinceDiskLastOptimized                      = $null
-$Global:VolumeNumber                                    = $null
-$Global:LastAbruptSytemRebootDate                       = $null
+$Global:CurrentDate                                         = $null
+$Global:LastDiskOptimizeDate                                = $null
+$Global:DaysSinceDiskLastOptimized                          = $null
+$Global:VolumeNumber                                        = $null
+$Global:LastAbruptSytemRebootDate                           = $null
 
 
-$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS    = $null
+$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
 
-$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS            = $null
-$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS               = $null
-$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS              = $null
-$Global:UA_SYS_UPDATE_FUNCTION_STATUS                   = $null
-$Global:UA_STORE_UPDATE_FUNCTION_STATUS                 = $null
-$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                = $null
-$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                  = $null
-$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                = $null
-$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS              = $null
-$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                 = $null
-$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                = $null
-$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                 = $null
-$Global:NOP_P2P_DISABLE_FUNCTION_STATUS                 = $null
-$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS              = $null
-$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                 = $null
-$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS           = $null
-$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS               = $null
-$Global:SA_PR_HANDLE_FUNCTION_STATUS                    = $null
+$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
+$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
+$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
+$Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
+$Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
+$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
+$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
+$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
+$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
+$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
+$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
+$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
+$Global:NOP_P2P_DISABLE_FUNCTION_STATUS                     = $null
+$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
+$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
+$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
+$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
+$Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
 
 
-$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   = $null
+$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
 
-$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED           = $null
-$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED              = $null
-$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED             = $null
-$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED        = $null
-$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED       = $null
-$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED   = $null
-$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED             = $null
-$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED      = $null
-$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED= $null
-$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED     = $null
-$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
+$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
+$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
+$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
+$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
+$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
+$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
+$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
+$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 
 
 # Aadditional requirements can be added into the if below as constraints pop up
@@ -133,18 +133,18 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
         function __Input_Dispatch_Center_Control_Function__ { # meaning of cmdletbinding() ?
             [CmdletBinding()] param(
-                [Parameter(Position = 0, Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
-                [Parameter(Position = 1, Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 2, Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS,
-                [Parameter(Position = 3, Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
+                [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS,
+                [Parameter(Position = 3,  Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS,
 
-                [Parameter(Position = 4, Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 5, Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 6, Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 4,  Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 5,  Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 6,  Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS,
 
-                [Parameter(Position = 7, Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 8, Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
-                [Parameter(Position = 9, Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
+                [Parameter(Position = 7,  Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 8,  Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
+                [Parameter(Position = 9,  Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
                 [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
                 [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
                 [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
