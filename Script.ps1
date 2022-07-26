@@ -7,12 +7,32 @@
         # &&&&&&&&&& OR &&&&&&&&&&
 
         # The restart can be handled in the end after the output dispatch center gives a green light after the result of all the functions are determined. In the meantime, restarts can be kept pending.
-        # That would save a lot of extra code. But if certain operation requires immediate restart to complete, then this section might have a relevance, till then this is commeted.
+        # That would save a lot of extra code. But if certain operation requires immediate restart to complete, then this section might have a relevance, till then this is commented.
 
-        # function Query_Registry_For_Mid_Execution_Restart_Handle_Function {
-        #     # if it is determined that restart has occured, then control will directly jump to the function after the function which called the restart.
-        #     # else run script from start.
-        # }
+        function Query_Registry_For_Mid_Execution_Restart_Handle_Function {
+            # if it is determined that restart has occured, then control will directly jump to the function after the function which called the restart.
+            # else run script from start.
+        }
+
+        Query_Registry_For_Mid_Execution_Restart_Handle_Function
+
+        # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
+        function Set_Registry_Key_Before_Restart_Handle_Function {
+            $Global:RegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
+
+            $Global:RegistryName = "ScriptRestartSignal"
+
+            $Global:ScriptLocation = Get-ChildItem -Path (Get-Location) -Filter .\Script.ps1 -Recurse |  ForEach-Object {$_.FullName}
+
+            $Global:RegistryValue = "C:\Program Files\PowerShell\7\pwsh.exe -noexit -command $Global:ScriptLocation"
+        
+            New-Item -Path $Global:RegistryPath -Name $Global:RegistryName
+
+            New-ItemProperty -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
+
+            # There might be no need to remove registry key after the script is run, because, Windows always resets RunOnce key value.
+
+        }
 
         # ********************END OF -> Zero Section********************
         
@@ -27,6 +47,10 @@ $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
     Major = 7
     Minor = 2 
 }
+$Global:RegistryPath
+$Global:RegistryName
+$Global:ScriptLocation
+$Global:RegistryValue
 
         # ********************END OF -> Pre-Initialization Section********************
 
@@ -38,6 +62,7 @@ $Global:LastDiskOptimizeDate                                = $null
 $Global:DaysSinceDiskLastOptimized                          = $null
 $Global:VolumeNumber                                        = $null
 $Global:LastAbruptSytemRebootDate                           = $null
+$Global:RestartStatusVariable                               = $null
 
 
 $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
@@ -102,7 +127,15 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             # Spawn PowerShell with $CurrentUser privileges
             Start-Process -FilePath "powershell" -Verb RunAs
             # Modify ExecutionPolicy to run scripts
-            Set-ExecutionPolicy -ExecutionPolicy Bypass
+            try {
+                $ExecutionPolicy = Get-ExecutionPolicy
+                if ($ExecutionPolicy -ne 'Bypass') {
+                    Set-ExecutionPolicy Bypass -Force
+                }
+            } catch {
+                Write-Host "[!] Error: Unable to set ExecutionPolicy to Bypass." -ForegroundColor Red    
+            }
+            
         }
         else {
             Write-Host "[!] Admin privileges required"  # can write Write-Error or something like that
@@ -163,17 +196,7 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
 
         # function Get_System_Information_Handle_Function {
         #     # Get system information on the host
-        #     $HostSystemInfo = Get-ComputerInfo
-        #     $HostSystemInfo | Select-Object -ExpandProperty Name
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsProductName
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsBuildNumber
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsEdition
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsBuildType
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsProductId
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsSuseType
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsSuseVersion
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsSuseBuildNumber
-        #     $HostSystemInfo | Select-Object -ExpandProperty WindowsSuseEdition
+        #     
         # }
 
         # Copilot generated code for function Get_System_Information_Handle_Function
@@ -213,7 +236,8 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
             $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
             $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized -split "}"
             $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -First 1
-            # Debugging outputs
+
+            # Debug outputs
             Write-Host "[*] Disk was optimized $Global:DaysSinceDiskLastOptimized days ago" -ForegroundColor White -BackgroundColor Blue
 
             # Optimise-Volume Cmdlet will help here
@@ -267,16 +291,19 @@ if(($Global:HostPowershellVersion.Major -eq $Global:MinimumRequiredPowershellVer
                     sfc /scannow
                     
                     # rough code start
-                    # -wait parameter doesn't work on local system
-                    # if($LASTEXITCODE -eq 0) {
-                    #     $ComputerName = Get-ComputerInfo | Select-Object CsCaption
-                    #     $ComputerName = $ComputerName.CsCaption
-                    #     Import-Module -Name Microsoft.PowerShell.Management
-                    #     Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200
-                    # rough code end
-                    $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
+
+                    if($LASTEXITCODE -eq 0) {
+                        $ComputerName = Get-ComputerInfo | Select-Object CsCaption
+                        $ComputerName = $ComputerName.CsCaption
+                        Import-Module -Name Microsoft.PowerShell.Management
+                        Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200 # -wait parameter doesn't work on local system
+
+                        # rough code end
+                        $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
+                    }   
                 }
             }
+                
             
             if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
                 function Run_DISM_Utility_Execution_Function {
