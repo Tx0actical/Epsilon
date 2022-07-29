@@ -1,5 +1,17 @@
 # Probabilistic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
+## Overview
+
+## Installation
+
+## Useage
+
+## Interpreting Results
+
+## References
+
+- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
+
 > The most important aspect of the final script would be that the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that. A realistic and useful aim would be solve a problem for which there is no troubleshooter available.
 
 - To automate system file integrity checking, SFC and DISM can be used.
