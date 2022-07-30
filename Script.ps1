@@ -1,12 +1,13 @@
         # ********************Zero Section********************
 
-# Firstly, the script can record itself into the event log.
-# This is useful for determining when the script was last run.
+Import-Module -Name Microsoft.PowerShell.Diagnostics
+Import-Module -Name Microsoft.PowerShell.Utility
+Import-Module -Name Microsoft.PowerShell.Management
+
+# Firstly, script records itself into the event log, for determining when the script was last run.
 
 New-EventLog -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "AutomaticScript has started"
-
 Write-EventLog -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "AutomaticScript has started"  
-
 Get-WinEvent -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 # This section will first check the registry value that is set when the computer is restarted in the middle of script execution.
@@ -20,37 +21,36 @@ Get-WinEvent -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
+
+function Reload_Previous_Script_Instance_State_Handle_Function {
+    [CmdletBinding()] param (
+        [Parameter()] [String] $PreviousStateFile
+    )
+    # check if a state file is stored previously
+    if ($PreviousStateFile) {
+
+    } else {
+        # create a statefile
+    }
+    # function to record current state including variables and other state information used when resuming the script after restart.
+    $Global:ScriptVariableState = @{
+        'CurrentDate' = $Global:CurrentDate;
+        'bar' = $bar;
+        'baz' = $baz;
+    };
+    
+    $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
+}
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     # Set the RunOnce key
     $Global:RegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
-
     $Global:RegistryName = "LastRestartCausedByScript"
-
     $Global:ScriptLocation = $PSCommandPath # Declared the extra variable to make it more explicit
-
     $Global:RegistryValue = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $Global:ScriptLocation"
-
     New-Item -Path $Global:RegistryPath -Name $Global:RegistryName
-
     New-ItemProperty -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
 
     # There might be no need to remove registry key after the script is run, because, Windows always removes RunOnce key after use.
-}
-
-function Query_Registry_For_Mid_Execution_Restart_Handle_Function {
-    # if it is determined that restart has occured, then control will directly jump to the function after the function which called the restart.
-    # else run script from start.
-
-    # this should call Current_Script_Instance_State_Handle_Function, to d
-
-    # check if the HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce key is set.
-    if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
-        Write-Host "Reg key successfully set"
-    }
-
-    # Check to see if the value is set and it returns a value
-
-    
 }
 
 function Resume_Script_Execution_With_Previous_State_Handle_Function {
@@ -62,13 +62,18 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
 
     # 300 seconds, a typical time to restart
     if(($DaysSinceScriptLastRun -eq 0) -and ($HoursSinceScriptLastRun -eq 0) -and ($MinutesSinceScriptLastRun -eq 0) -and ($SecondsSinceScriptLastRun -ge 300)) {
-        Write-Host "Last restart was caused by a script instance"
-        # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
+        if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
+            
+            Write-Host "[*] Checking last boot cause"
+            Write-Host "[+] Last restart was caused by a script instance"
+            Write-Host "[*] Checking last boot cause"
+            Write-Host "[+] Registry key successfully set before last restart"
 
-        # moreover, call Query_Registry_For_Mid_Execution_Restart_Handle_Function
-        Query_Registry_For_Mid_Execution_Restart_Handle_Function
+            # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
+        }
+        
     } else {
-        Write-Host "last restart was a normal one"
+        Write-Host "[+] Last restart was not caused by the script"
     }
 }
 
@@ -76,8 +81,6 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
         
         # ********************Pre-Initialization Section********************
 
-
-Import-Module -Name Microsoft.PowerShell.Diagnostics
 
 # Get OS version
 $Global:HostOSVersion = Get-ComputerInfo | Select-Object WindowsProductName
@@ -105,8 +108,8 @@ $Global:VolumeNumber                                        = $null
 $Global:LastSytemRebootDate                                 = $null
 $Global:RestartStatusVariable                               = $null
 
-
 $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
+$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
 
 $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
 $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
@@ -126,9 +129,6 @@ $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
 $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
 $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
 $Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
-
-
-$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
 
 $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
 $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
@@ -150,27 +150,6 @@ $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
 $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 
 #Requires -Version 7.2.0
-#Requires -RunAsAdministrator
-
-function Reload_Previous_Script_Instance_State_Handle_Function {
-    [CmdletBinding()] param (
-        [Parameter()] [String] $PreviousStateFile
-    )
-    # check if a state file is stored previously
-    if ($PreviousStateFile) {
-
-    } else {
-        # create a statefile
-    }
-    # function to record current state including variables and other state information used when resuming the script after restart.
-    $Global:ScriptVariableState = @{
-        'CurrentDate' = $Global:CurrentDate;
-        'bar' = $bar;
-        'baz' = $baz;
-    };
-    
-    $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
-}
 
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
     Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
@@ -194,12 +173,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 Set-ExecutionPolicy Bypass -Force
             }
         } catch {
-            Write-Host "[!] Unable to set ExecutionPolicy to Bypass." -ForegroundColor Red    
+            Write-Host "[-] Unable to get required permissions" -ForegroundColor Red    
         }
         
     }
     else {
-        Write-Host "[!] Admin privileges required"  # can write Write-Error or something like that
+        Write-Host "[-] Unable to get required permissions"  # can write Write-Error or something like that
     }
     
     # if the user runs the code as administrator then the above code will not be required. But a self elevating script can be used.
@@ -269,7 +248,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
         # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
 
-        # variables in this functions should be global
+        # variables in this function should be global
 
         
         
@@ -317,9 +296,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
             function Run_CHKDSK_Utility_Execution_Function {
-                
-                # determine volumes present in the system
-                # run chkdsk on all those volumes
+                # Determine volumes present in the system, and run chkdsk on all those volumes
                 $Volume = Get-Volume
                 $Global:VolumeNumber = $Volume.Count
                 $i = 0
