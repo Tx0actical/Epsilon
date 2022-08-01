@@ -18,14 +18,14 @@ In a nutshell the script aims to:
 
 > Provide the least possible element of user interaction in which the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that.
 
+## Capabilities
+
 ## Installation
 
 Clone the repository, `cd` into the directory and run:
+` .\Script.ps1 `
 
-
-## Useage
-
-Just running the ` .\Script.ps1 ` would suffice to get the results.
+## Results
 
 ## References
 
