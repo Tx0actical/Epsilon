@@ -6,20 +6,35 @@ Windows OS is a popular operating system for computers and servers. It is a powe
 
 But still, it has some rough edges.
 
-Although quite stable now from the previous versions, more work is required to make 
+Hangs, Crashes, Performance Issues, and Network Slowdowns are a common occurrence in Windows OS. Although, efforts have been made to make Windows OS better, it still has some issues that are not fixed.
+
+In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters, to get the desired results. This might not be the most user friendly.
+
+This is where Probabilistic Optimization (PO) comes in.
+
+The heart of this script is a multilayer perceptron (MLP) that is trained to recognise patterns of mis-configuration and/or inefficient settings (such as Background Apps that might waste system resources). After determinig the problem, the MLP is used activate different sections of the main script, `Script.ps1`, to try and fix the issues.
+
+In a nutshell the script aims to:
+
+> Provide the least possible element of user interaction in which the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that.
 
 ## Installation
 
-Clone the repository, ```cd``` into the directory and run:
+Clone the repository, `cd` into the directory and run:
 
-``` .\Script.ps1 ```
+
 ## Useage
 
-Just running the script would suffice to get the results.
+Just running the ` .\Script.ps1 ` would suffice to get the results.
+
+## References
+
+
+- [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
+
+- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
 ## Rough Section
-
-> The most important aspect of the final script would be that the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that. A realistic and useful aim would be solve a problem for which there is no troubleshooter available.
 
 - To automate system file integrity checking, SFC and DISM can be used.
     - Additional rules can be applied, for eg. using task scheduler to trigger the script when a critical warning has lead to a sudden reboot. This can be looked by event viewer.
@@ -58,11 +73,7 @@ Just running the script would suffice to get the results.
 
 - An important thing to keep in mind while determining the cause of a particular problem, is to analyse what was going on when the problem happened or in other words, what was the state?
 
-- Maybe the script should put more focus on security
+- Maybe the script should put more focus on security.
 
-## References
+- A realistic and useful aim would be solve a problem for which there is no troubleshooter available.
 
-
-- [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
-
-- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
