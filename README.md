@@ -1,4 +1,4 @@
-# Probabilistic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
+# Stochastic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
 ## Overview
 
@@ -10,9 +10,9 @@ Hangs, Crashes, Performance Issues, and Network Slowdowns are a common occurrenc
 
 In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters, to get the desired results. This might not be the most user friendly.
 
-This is where Probabilistic Optimization (PO) comes in.
+This is where Probabilistic Optimization (PO) comes in. In the context of this project, PO means that a Neural Network designed to analyse the system, will determine p 
 
-The heart of this script is a multilayer perceptron (MLP) that is trained to recognise patterns of mis-configuration and/or inefficient settings (such as Background Apps that might waste system resources). After determinig the problem, the MLP is used activate different sections of the main script, `Script.ps1`, to try and fix the issues.
+The heart of this script is a MultiLayer Perceptron (MLP) that is trained to recognise patterns of mis-configuration and/or inefficient settings (such as Background Apps that might waste system resources). After determinig the problem, the MLP is used activate different sections of the main script, `Script.ps1`, to try and fix the issues.
 
 In a nutshell the script aims to:
 
@@ -22,7 +22,7 @@ In a nutshell the script aims to:
 
 The script has the following features:
 
-- System File Auditing &#8594
+- System File Auditing &rarr;
 
 ## Installation
 
@@ -30,7 +30,7 @@ Clone the repository, `cd` into the repository directory and run:
 
 `.\Script.ps1`
 
-> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate, if not run as `Administrator`.
+> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
 
 ## Results
 
@@ -49,6 +49,8 @@ Clone the repository, `cd` into the repository directory and run:
 - An excellent YouTube stream for builing a Neural Network &rarr [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
 - [Official PowerShell Documentation](https://docs.microsoft.com/en-us/powershell/)
+
+- [Multi-Threading in PowerShell](https://adamtheautomator.com/powershell-multithreading/)
 
 ## Rough Section
 
