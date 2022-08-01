@@ -36,10 +36,10 @@ Clone the repository, `cd` into the repository directory and run:
 
 ## Tasks
 
-- [] Add Multi-Threading Support to the `.\Script.ps1` script.
-- [] Integrate the main script with `Neural_Engine.ps1`.
-- [] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
-- [] Function defintions for the remaining functions in `.\Script.ps1`.
+- [x] Add Multi-Threading Support to the `.\Script.ps1` script.
+- [ ] Integrate the main script with `Neural_Engine.ps1`.
+- [ ] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
+- [ ] Function defintions for the remaining functions in `.\Script.ps1`.
 
 ## References
 
