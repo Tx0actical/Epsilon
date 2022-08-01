@@ -2,15 +2,22 @@
 
 ## Overview
 
+Windows OS is a popular operating system for computers and servers. It is a powerful and easy to use operating system that is used by many people. It powers most, if not all, of the majority of Home and Enterprise computers. It has come a long way from its original form as a command line operating system to the current version of Windows 11.
+
+But still, it has some rough edges.
+
+Although quite stable now from the previous versions, more work is required to make 
+
 ## Installation
 
+Clone the repository, ```cd``` into the directory and run:
+
+``` .\Script.ps1 ```
 ## Useage
 
-## Interpreting Results
+Just running the script would suffice to get the results.
 
-## References
-
-- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
+## Rough Section
 
 > The most important aspect of the final script would be that the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that. A realistic and useful aim would be solve a problem for which there is no troubleshooter available.
 
@@ -45,8 +52,6 @@
     - Some functions names are esoteric, meaning, they are unique to this script.
     - Moreover, these functions are defined inside script, they are not called directly in a command-line.
 
-- [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
-
 - There should be extensive focus on reducing restarts.
 
 - Various functional tests are implemented, in-line with the best practices of unit testing. Best example being the `$MasterInputDispatchCenterFunctionStatus` **variable without which being set to true the script cannot perform maintenance tasks and all the sub-sections will not run.
@@ -54,3 +59,10 @@
 - An important thing to keep in mind while determining the cause of a particular problem, is to analyse what was going on when the problem happened or in other words, what was the state?
 
 - Maybe the script should put more focus on security
+
+## References
+
+
+- [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
+
+- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
