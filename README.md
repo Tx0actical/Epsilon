@@ -20,19 +20,32 @@ In a nutshell the script aims to:
 
 ## Features
 
+The script has the following features:
+
+- System File Auditing &#8594
+
 ## Installation
 
-Clone the repository, `cd` into the directory and run:
-` .\Script.ps1 `
+Clone the repository, `cd` into the repository directory and run:
+
+`.\Script.ps1`
+
+> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate, if not run as `Administrator`.
 
 ## Results
 
-## References
+## Tasks
 
+- [] Add Multi-Threading Support to the `.\Script.ps1` script.
+- [] Integrate the main script with `Neural_Engine.ps1`.
+- [] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
+- [] Function defintions for the remaining functions in `.\Script.ps1`.
+
+## References
 
 - [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 
-- [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
+- An excellent YouTube stream for builing a Neural Network &rarr [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
 - [Official PowerShell Documentation](https://docs.microsoft.com/en-us/powershell/)
 
