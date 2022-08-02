@@ -72,4 +72,4 @@ Clone the repository, `cd` into the repository directory and run:
 
 - The Official PowerShell Documentation by Mircosoft, [link](https://docs.microsoft.com/en-us/powershell/)
 
-- PowerShell Multithreading [link](https://adamtheautomator.com/powershell-multithreading/)
+- An awesome blog on PowerShell Multithreading &rarr; [link](https://adamtheautomator.com/powershell-multithreading/)
