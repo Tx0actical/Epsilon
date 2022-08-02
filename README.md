@@ -1,3 +1,8 @@
+![Weights and Biases](https://img.shields.io/badge/Weights_&_Biases-FFBE00?style=for-the-badge&logo=WeightsAndBiases&logoColor=white)
+![VS Code](https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![PowerShell](https://img.shields.io/badge/powershell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
+
 # Stochastic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
 ## Overview
@@ -18,8 +23,15 @@ In a nutshell the script aims to:
 
 The script has the following features:
 
-- System File Auditing &rarr;
+- System File Auditing &rarr; The script uses CheckDisk (CHKDSK), System File Checker (SFC), and Deployment Image Servicing and Management (DISM) tools, to automate system-files integrity checking. These functions are handled by `Run_CHKDSK_Utility_Execution_Function`, `Run_SFC_Utility_Execution_Function`, and `Run_DISM_Utility_Execution_Function` respectively. 
 
+- Updating Capabilities &rarr; The script uses WinGet, modules such as `PSWindowsUpdate` to perform System, Microsoft Store, and Driver updates, if available. These are handled by `Update_Windows_System_Handle_Function`, `Update_Microsoft_Store_Application_Handle_Function`, and `Update_Windows_System_Drivers_Handle_Function`.
+
+- Network Optimization &rarr; The script aims to change DNS server to Google, changes IRP stack size, configures background apps to utilise less resources, disables Large Send Offload (LSO), Disables Windows Auto Tuning, Disable QoS Packet Scheduler, Disables P2P Update Process, with an aim to improve network performance. These are achieved by `Change_DNS_Server_Update_Function`, `Change_IRP_Stack_Size_Update_Function`, `Configure_Background_Applications_Settings_Handle_Function`,`Disable_Large_Send_Offload_Handle_Function, Disable_Windows_Auto_Tuning_Handle_Function`, `Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function`, and `Disable_P2P_Update_Process_Handle_Function`.
+
+- Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
+
+- Security Checks &rarr; The script uses
 ## Installation
 
 Clone the repository, `cd` into the repository directory and run:
@@ -38,6 +50,7 @@ Clone the repository, `cd` into the repository directory and run:
 - [ ] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
 - [ ] Function defintions for the remaining functions in `.\Script.ps1`.
 - [ ] Research other Neural Networks, study feasibility of integrating/replacing with the current one.
+- [ ] Giving users choice to opt out of certain optimization methods (e.g. Disabling some features in the Network Optimization Section).
 
 ## References
 
