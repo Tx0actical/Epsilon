@@ -68,6 +68,6 @@ Clone the repository, `cd` into the repository directory and run:
 
 - A guide to Optimizing PowerShell Scripts can be found [here](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 
-- [Official PowerShell Documentation](https://docs.microsoft.com/en-us/powershell/)
+- The Official PowerShell Documentation by Mircosoft, [link](https://docs.microsoft.com/en-us/powershell/)
 
-- [Multi-Threading in PowerShell](https://adamtheautomator.com/powershell-multithreading/)
+- PowerShell Multithreading [link](https://adamtheautomator.com/powershell-multithreading/)
