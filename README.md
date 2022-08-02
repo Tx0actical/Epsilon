@@ -62,7 +62,7 @@ Clone the repository, `cd` into the repository directory and run:
 
 - [Multi-Threading in PowerShell](https://adamtheautomator.com/powershell-multithreading/)
 
-## Rough Section
+## <Rough Section>
 
 - To automate system file integrity checking, SFC and DISM can be used.
     - Additional rules can be applied, for eg. using task scheduler to trigger the script when a critical warning has lead to a sudden reboot. This can be looked by event viewer.
@@ -104,4 +104,6 @@ Clone the repository, `cd` into the repository directory and run:
 - Maybe the script should put more focus on security.
 
 - A realistic and useful aim would be solve a problem for which there is no troubleshooter available.
+
+## </Rough Section>
 
