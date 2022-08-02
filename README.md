@@ -2,12 +2,6 @@
 
 ## Overview
 
-Windows OS is a popular operating system for computers and servers. It has come a long way in improving it's functionality, performance and stability.
-
-But still, it has some rough edges.
-
-Hangs, Crashes, Performance Issues, and Network Slowdowns are a common occurrence in Windows OS. Although, efforts have been made to make Windows OS better, it still has some issues that are not fixed.
-
 In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters, to get the desired results. This might not be the most user friendly.
 
 This is where Stochastic Optimization (SO) comes in. In classical sense, SO means that a Neural Network is non-deterministic in nature, outcomes cannot be determined and results vary each time a stochastic algorithm is run. In the context of this project (matching the classical idea), SO is used to describe the process of determination of causes of performance issues in Windows OS by looking at logs and related system behaviour, then determining the cause of the issue, and try to fix that as a last step.
