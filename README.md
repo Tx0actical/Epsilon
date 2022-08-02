@@ -52,6 +52,8 @@ Clone the repository, `cd` into the repository directory and run:
 
 ## Results
 
+- [ ] How the result is displayed, formatted and presented to the user, is still a work in progress.
+
 ## Tasks
 
 - [x] Complete overall structure of `Script.ps1`, `Network.ps1`, and `Neural_Engine.ps1`
