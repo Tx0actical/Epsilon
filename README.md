@@ -42,11 +42,23 @@ Disable_P2P_Update_Process_Handle_Function
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
 
 - Security Checks &rarr; 
-## Installation
+## Useage
 
-Clone the repository, `cd` into the repository directory and run:
+### If Git is installed
+Clone the repository by opening a PowerShell terminal and type:
 
-`.\Script.ps1`
+```git clone https://github.com/Tx0actical/EpsilonScript```
+
+`cd` into the repository directory and run:
+
+```cd [Drive]://[Path]/[to]/[Script]```
+
+```.\Script.ps1```
+
+### If git is not installed
+Navigate to `https://github.com/Tx0actical/EpsilonScript` and click the `code` button. From the drop-down menu select `Download ZIP`.
+
+Once downloaded, Unzip and run `Script.ps1`
 
 > Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
 
