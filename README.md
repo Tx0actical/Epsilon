@@ -44,6 +44,8 @@ Disable_P2P_Update_Process_Handle_Function
 - Security Checks &rarr; 
 ## Useage
 
+> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
+
 ### If Git is installed
 - Clone the repository by opening a PowerShell terminal and type:
 
@@ -53,14 +55,12 @@ Disable_P2P_Update_Process_Handle_Function
 
 - ```cd [Drive]://[Path]/[to]/[Script]```
 
-- - ```.\Script.ps1```
+- ```.\Script.ps1```
 
 ### If Git is not installed
-Navigate to `https://github.com/Tx0actical/EpsilonScript` and click the `code` button. From the drop-down menu select `Download ZIP`.
+- Navigate to `https://github.com/Tx0actical/EpsilonScript` and click the `code` button. From the drop-down menu select `Download ZIP`.
 
 - Once downloaded, Unzip and run `Script.ps1`
-
-> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
 
 ## Results
 
