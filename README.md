@@ -30,7 +30,7 @@ The script has the following features:
 - Network Optimization &rarr; The script aims to change DNS server to Google, changes IRP stack size, configures background apps to utilise less resources, disables Large Send Offload (LSO), Disables Windows Auto Tuning, Disable QoS Packet Scheduler, Disables P2P Update Process, with an aim to improve network performance. These are achieved by 
 
 ```
-`Change_DNS_Server_Update_Function`
+Change_DNS_Server_Update_Function
 Change_IRP_Stack_Size_Update_Function
 Configure_Background_Applications_Settings_Handle_Function
 Disable_Large_Send_Offload_Handle_Function
