@@ -41,7 +41,7 @@ Disable_P2P_Update_Process_Handle_Function
 
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
 
-- Security Checks &rarr; The script uses
+- Security Checks &rarr; 
 ## Installation
 
 Clone the repository, `cd` into the repository directory and run:
@@ -64,9 +64,9 @@ Clone the repository, `cd` into the repository directory and run:
 
 ## References
 
-- A big shout-out to, @CarolineChiari, the creator of the excellent YouTube stream for building a Neural Network &rarr; [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell)
+- A big shout-out to, @CarolineChiari, the creator of the excellent YouTube stream for building a Neural Network [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
-- [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
+- A guide to Optimizing PowerShell Scripts can be found [here](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 
 - [Official PowerShell Documentation](https://docs.microsoft.com/en-us/powershell/)
 
