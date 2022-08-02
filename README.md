@@ -41,7 +41,14 @@ Disable_P2P_Update_Process_Handle_Function
 
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
 
-- Security Checks &rarr; 
+- Security Checks &rarr; The script can start Windows Defender to perform a quick/complete scan depending upon last scan and recognise, and kill suspicious processes. There are achieved through
+```
+Run_Windows_Defender_Scan_Execution_Function
+Analyze_Processes_Handle_Function
+```
+
+- User Recommendations &rarr; Finally, the script can generate recommendations for the user based on the scan results. This is the job of `Generate_Recommendations_Display_Function`
+
 ## Useage
 
 > Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
