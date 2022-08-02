@@ -35,8 +35,6 @@ function Reload_Previous_Script_Instance_State_Handle_Function {
     # function to record current state including variables and other state information used when resuming the script after restart.
     $Global:ScriptVariableState = @{
         'CurrentDate' = $Global:CurrentDate;
-        'bar' = $bar;
-        'baz' = $baz;
     };
     
     $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
@@ -175,7 +173,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         } catch {
             Write-Host "[-] Unable to get required permissions" -ForegroundColor Red    
         }
-        
     }
     else {
         Write-Host "[-] Unable to get required permissions"  # can write Write-Error or something like that
