@@ -64,7 +64,7 @@ Clone the repository, `cd` into the repository directory and run:
 
 ## References
 
-- A big shout-out to, @CarolineChiari, the creator of an excellent YouTube stream for building a Neural Network &rarr; [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell)
+- A big shout-out to, @CarolineChiari, the creator of the excellent YouTube stream for building a Neural Network &rarr; [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
 - [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 
