@@ -2,7 +2,7 @@
 
 ## Overview
 
-Windows OS is a popular operating system for computers and servers. It is a powerful and easy to use operating system that is used by many people. It powers most, if not all, of the majority of Home and Enterprise computers. It has come a long way from its original form as a command line operating system to the current version of Windows 11.
+Windows OS is a popular operating system for computers and servers. It has come a long way in improving it's functionality, performance and stability.
 
 But still, it has some rough edges.
 
@@ -10,7 +10,9 @@ Hangs, Crashes, Performance Issues, and Network Slowdowns are a common occurrenc
 
 In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters, to get the desired results. This might not be the most user friendly.
 
-This is where Probabilistic Optimization (PO) comes in. In the context of this project, PO means that a Neural Network designed to analyse the system, will determine p 
+This is where Stochastic Optimization (SO) comes in. In classical sense, SO means that a Neural Network is non-deterministic in nature, outcomes cannot be determined and results vary each time a stochastic algorithm is run. In the context of this project (matching the classical idea), SO is used to describe the process of determination of causes of performance issues in Windows OS by looking at logs and related system behaviour, then determining the cause of the issue, and try to fix that as a last step.
+
+Problems like BSODs (Blue Screen of Death) can have multiple causes like Bad driver configuration, recent Software updates, Hardware problems, Memory failures, Power failures, Disk Errors. The initial state of the system is unoptimized. The final state can be assumed to be optimized, for the sake of argument. But as seen in the BSOD example, there might not be a single cause and any automatic optimization may fail to rectify the issue, as complex system misbehaviours most often require manualy analysis like manual debugging. Hence, realistically, automatic optimization approches like this one, may or may not be able to fix all issues, that's why the nature of AI environment is stochastic in nature. 
 
 The heart of this script is a MultiLayer Perceptron (MLP) that is trained to recognise patterns of mis-configuration and/or inefficient settings (such as Background Apps that might waste system resources). After determinig the problem, the MLP is used activate different sections of the main script, `Script.ps1`, to try and fix the issues.
 
@@ -41,12 +43,13 @@ Clone the repository, `cd` into the repository directory and run:
 - [ ] Integrate the main script with `Neural_Engine.ps1`.
 - [ ] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
 - [ ] Function defintions for the remaining functions in `.\Script.ps1`.
+- [ ] Research other Neural Networks, study feasibility of integrating/replacing with the current one.
 
 ## References
 
 - [Guide to optimize PowerShell scripts](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 
-- An excellent YouTube stream for builing a Neural Network &rarr [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
+- An excellent YouTube stream for building a Neural Network &rarr; [Neural Networks in PowerShell](https://github.com/CarolineChiari/PowerShell)
 
 - [Official PowerShell Documentation](https://docs.microsoft.com/en-us/powershell/)
 
