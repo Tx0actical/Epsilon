@@ -56,7 +56,6 @@ Analyze_Processes_Handle_Function
 
 ### If Git is not installed
 - Navigate to `https://github.com/Tx0actical/EpsilonScript` and click the `code` button. From the drop-down menu select `Download ZIP`.
-
 - Once downloaded, unzip and run `Script.ps1`
 
 ## Results
