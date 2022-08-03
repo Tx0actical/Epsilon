@@ -225,7 +225,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 Set-ExecutionPolicy Bypass -Force
             }
         } catch {
-            Write-Host "[-] Unable to get required permissions" -ForegroundColor Red    
+            Write-Host "[-] Unable to get required Execution Policy permissions" -ForegroundColor Red    
         }
     }
     else {
@@ -246,7 +246,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
 
     # TO DO: Think about more sources of information for behaviour of Windows Systems
-
 
     # Function to keep track of inputs after all node probability determination
     # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
@@ -440,60 +439,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
             function Update_Windows_System_Drivers_Handle_Function {
-
-                # &&&&&&&&&& Method 1 &&&&&&&&&&
-
-                # $UpdateSvc = New-Object -ComObject Microsoft.Update.ServiceManager            
-                # $UpdateSvc.AddService2("7971f918-a847-4430-9279-4a52d1efe18d",7,"") 
-
-                # (New-Object -ComObject Microsoft.Update.ServiceManager).Services
-
-                # $Session = New-Object -ComObject Microsoft.Update.Session           
-                # $Searcher = $Session.CreateUpdateSearcher() 
-
-                # $Searcher.ServiceID = '7971f918-a847-4430-9279-4a52d1efe18d'
-                # $Searcher.SearchScope =  1 # MachineOnly
-                # $Searcher.ServerSelection = 3 # Third Party
-
-                # $Criteria = "IsInstalled=0 and Type='Driver'"
-                # Write-Host('Searching Driver-Updates...') -Fore Green     
-                # $SearchResult = $Searcher.Search($Criteria)          
-                # $Updates = $SearchResult.Updates
-
-                # #Show available Drivers...
-                # $Updates | Select-Object Title, DriverModel, DriverVerDate, Driverclass, DriverManufacturer | Format-List
-
-                # $UpdatesToDownload = New-Object -Com Microsoft.Update.UpdateColl
-                # $updates | ForEach-Object { $UpdatesToDownload.Add($_) | out-null }
-                # Write-Host('Downloading Drivers...')  -Fore Green
-                # $UpdateSession = New-Object -Com Microsoft.Update.Session
-                # $Downloader = $UpdateSession.CreateUpdateDownloader()
-                # $Downloader.Updates = $UpdatesToDownload
-                # $Downloader.Download()
-
-                # $UpdatesToInstall = New-Object -Com Microsoft.Update.UpdateColl
-                # $updates | % { if($_.IsDownloaded) { $UpdatesToInstall.Add($_) | out-null } }
-
-                # Write-Host('Installing Drivers...')  -Fore Green
-                # $Installer = $UpdateSession.CreateUpdateInstaller()
-                # $Installer.Updates = $UpdatesToInstall
-                # $InstallationResult = $Installer.Install()
-                # if($InstallationResult.RebootRequired) { 
-                # Write-Host('Reboot required! please reboot now..') -Fore Red
-                # } else { Write-Host('Done..') -Fore Green }
-
-                # $updateSvc.Services | Where-Object { $_.IsDefaultAUService -eq $false -and $_.ServiceID -eq "7971f918-a847-4430-9279-4a52d1efe18d" } | ForEach-Object { $UpdateSvc.RemoveService($_.ServiceID) }
-
-                # &&&&&&&&&& Method 2 &&&&&&&&&&
-
-                # Beginning of the script
                 # If the PowerShell Modules Folder is non-existing, it will be created.
                 if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
                     New-Item -ItemType Directory -Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules1 -Force
                 }
                 # Import the PowerShell Module
-                $ScriptPath = Get-Location
-                Import-Module $ScriptPath\PSWindowsUpdate -Force
+                Install-Module -Name PSWindowsUpdate
                 # Specify the path usage of Windows Update registry keys
                 $Path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows'
                 
@@ -505,8 +456,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     New-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -PropertyType DWord -Value '0'
                     New-ItemProperty $Path\WindowsUpdate -Name WUServer -PropertyType DWord -Value $null
                     New-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -PropertyType DWord -Value $null
-                }
-                else {
+                } else {
                     # If the value of the keys are incorrect, they will be modified
                     try {
                         Set-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -value "0" -ErrorAction SilentlyContinue
@@ -520,16 +470,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
                 # Add ServiceID for Windows Update
                 Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
-
                 # Pause and give the service time to update
                 Start-Sleep 30
-
                 # Scan against Microsoft, accepting all drivers
                 Get-WUInstall -MicrosoftUpdate -AcceptAll
-
                 # Scaning against Microsoft for all Driver types, and accepting all
                 Get-WUInstall -MicrosoftUpdate Driver -AcceptAll
-                
                 # Scanning against Microsoft for all Software Updates, and installing all, ignoring a reboot
                 Get-WUInstall -MicrosoftUpdate Software -AcceptAll -IgnoreReboot
 
@@ -545,13 +491,10 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             function Change_DNS_Server_Update_Function {
                 # First, determine the active interface that is connected to internet
                 # Get-WmiObject Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
-
                 # Note down InterfaceAlias name
                 Get-DnsClientServerAddress
-
                 # change IPv4 and IPv6 DNS servers
                 Set-DNSClientServerAddress "InterfaceAlias" –ServerAddresses ("8.8.8.8", "8.8.4.4")
-
                 # clear DNS cache
                 Clear-DnsClientCache
 
