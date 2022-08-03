@@ -67,7 +67,7 @@ Analyze_Processes_Handle_Function
 ### If Git is not installed
 - Navigate to `https://github.com/Tx0actical/EpsilonScript` and click the `code` button. From the drop-down menu select `Download ZIP`.
 
-- Once downloaded, Unzip and run `Script.ps1`
+- Once downloaded, unzip and run `Script.ps1`
 
 ## Results
 
@@ -85,7 +85,7 @@ Analyze_Processes_Handle_Function
 
 ## References
 
-- A big shout-out to, @ CarolineChiari, the creator of the excellent YouTube stream for building a Neural Network [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell). Really appreciate her work!
+- A big shout-out to, [@CarolineChiari](https://github.com/CarolineChiari), the creator of the excellent YouTube stream for building a Neural Network [Coding a Neural Network in PowerShell](https://github.com/CarolineChiari/PowerShell). Really appreciate her work!
 - A guide to Optimizing PowerShell Scripts can be found [here](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 - The Official PowerShell Documentation by Mircosoft, [link](https://docs.microsoft.com/en-us/powershell/)
 - An awesome blog on PowerShell Multithreading &rarr; [link](https://adamtheautomator.com/powershell-multithreading/)
