@@ -6,9 +6,9 @@ Import-Module -Name Microsoft.PowerShell.Management
 
 # Firstly, script records itself into the event log, for determining when the script was last run.
 
-New-EventLog -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "AutomaticScript has started"
-Write-EventLog -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "AutomaticScript has started"  
-Get-WinEvent -LogName "PowerShellCore/Operational" -MaxEvents 1
+New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "AutomaticScript has started"
+Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "AutomaticScript has started"  
+Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 # This section will first check the registry value that is set when the computer is restarted in the middle of script execution.
 # If the value is set, then the script will continue from where it left off (addtional logic will be required to do that).
@@ -21,30 +21,11 @@ Get-WinEvent -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
-
-function Reload_Previous_Script_Instance_State_Handle_Function {
-    [CmdletBinding()] param (
-        [Parameter()] [String] $PreviousStateFile
-    )
-    # check if a state file is stored previously
-    if ($PreviousStateFile) {
-
-    } else {
-        # create a statefile
-    }
-    # function to record current state including variables and other state information used when resuming the script after restart.
-    $Global:ScriptVariableState = @{
-        'CurrentDate' = $Global:CurrentDate;
-    };
-    
-    $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
-}
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     # Set the RunOnce key
     $Global:RegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
     $Global:RegistryName = "LastRestartCausedByScript"
-    $Global:ScriptLocation = $PSCommandPath # Declared the extra variable to make it more explicit
-    $Global:RegistryValue = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $Global:ScriptLocation"
+    $Global:RegistryValue = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $PSCommandPath"
     New-Item -Path $Global:RegistryPath -Name $Global:RegistryName
     New-ItemProperty -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
 
@@ -91,7 +72,6 @@ $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
 $Global:CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
 $Global:RegistryPath
 $Global:RegistryName
-$Global:ScriptLocation
 $Global:RegistryValue
 
         # ********************END OF -> Pre-Initialization Section********************
@@ -147,8 +127,82 @@ $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
 $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
 $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 
-#Requires -Version 7.2.0
+# Search for the PreviousStateFile in the current directory, that should be by the name of Resume.json
+$Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
 
+# Function to save and reload script state from a statefile
+function Reload_Previous_Script_Instance_State_Handle_Function {
+    [CmdletBinding()] param (
+        [Parameter()] [String] $Global:PreviousStateFile
+    )
+    # function to record current state including variables and other state information used when resuming the script after restart.
+    # check if a state file is stored previously
+    if ($PreviousStateFile) {
+        # load variable state information from the statefile
+        Get-Content -Path Resume.json
+    } else {
+        # create a statefile
+        $Global:ScriptVariableState = @{
+            'CurrentDate'                                       = $Global:CurrentDate                                       ;
+            'HostOSVersion'                                     = $Global:HostOSVersion                                     ;
+            'HostPowershellVersion'                             = $Global:HostPowershellVersion                             ;
+            'IncompatibleOSVersion'                             = $Global:IncompatibleOSVersion                             ;
+            'MinimumRequiredPowershellVersion'                  = $Global:MinimumRequiredPowershellVersion                  ;
+            'RegistryPath'                                      = $Global:RegistryPath                                      ;
+            'RegistryName'                                      = $Global:RegistryName                                      ;
+            'RegistryValue'                                     = $Global:RegistryValue                                     ;                                         
+            'LastDiskOptimizeDate'                              = $Global:LastDiskOptimizeDate                              ;                              
+            'DaysSinceDiskLastOptimized'                        = $Global:DaysSinceDiskLastOptimized                        ;
+            'VolumeNumber'                                      = $Global:VolumeNumber                                      ;  
+            'LastSytemRebootDate'                               = $Global:LastSytemRebootDate                               ; 
+            'RestartStatusVariable'                             = $Global:RestartStatusVariable                             ;  
+
+            'INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'      = $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS      ;  
+            'OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'     = $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS     ;  
+
+            'SFA_CHKDSK_EXECUTION_FUNCTION_STATUS'              = $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS              ; 
+            'SFA_SFC_EXECUTION_FUNCTION_STATUS'                 = $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                 ;  
+            'SFA_DISM_EXECUTION_FUNCTION_STATUS'                = $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                ;  
+            'UA_SYS_UPDATE_FUNCTION_STATUS'                     = $Global:UA_SYS_UPDATE_FUNCTION_STATUS                     ;  
+            'UA_STORE_UPDATE_FUNCTION_STATUS'                   = $Global:UA_STORE_UPDATE_FUNCTION_STATUS                   ;  
+            'UA_DRIVER_UPDATE_FUNCTION_STATUS'                  = $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                  ;  
+            'NOP_DNS_UPDATE_FUNCTION_STATUS'                    = $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                    ;  
+            'NOP_IRPSS_UPDATE_FUNCTION_STATUS'                  = $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                  ;  
+            'NOP_BAPP_CONFIGURE_FUNCTION_STATUS'                = $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                ; 
+            'NOP_LSO_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                   ;  
+            'NOP_ATUN_DISABLE_FUNCTION_STATUS'                  = $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                  ;  
+            'NOP_QOS_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                   ;  
+            'NOP_P2P_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_P2P_DISABLE_FUNCTION_STATUS                   ;  
+            'MRO_DFRG_EXECUTION_FUNCTION_STATUS'                = $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                ;  
+            'MRO_TEMP_UPDATE_FUNCTION_STATUS'                   = $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                   ;  
+            'MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS'             = $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS             ;  
+            'SA_DFNDR_DISABLE_EXECUTION_STATUS'                 = $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                 ;  
+            'SA_PR_HANDLE_FUNCTION_STATUS'                      = $Global:SA_PR_HANDLE_FUNCTION_STATUS                      ;  
+
+            'SET_SFA_CHKDSK_NODE_RESULT_DETERMINED'             = $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED             ;  
+            'SET_SFA_SFC_NODE_RESULT_DETERMINED'                = $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                ; 
+            'SET_SFA_DISM_NODE_RESULT_DETERMINED'               = $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED               ;  
+            'SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED'          = $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED          ;  
+            'SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED        ;  
+            'SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED       ;  
+            'SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED'         = $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED         ;  
+            'SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED       ;  
+            'SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED'     = $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED     ; 
+            'SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED        ; 
+            'SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED       ;  
+            'SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED        ;  
+            'SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED        ;  
+            'SET_MRO_DFRG_NODE_RESULT_DETERMINED'               = $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED               ;  
+            'SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED        ;  
+            'SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED'  = $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED  ;  
+            'SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED       ;  
+            'SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED'           = $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED           ;  
+        };
+        $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
+    }
+}
+
+#Requires -Version 7.2.0
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
     Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
     Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur." -ForegroundColor White -BackgroundColor Blue
