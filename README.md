@@ -24,11 +24,8 @@ In a nutshell the script aims to:
 The script has the following features:
 
 - System File Auditing &rarr; The script uses CheckDisk (CHKDSK), System File Checker (SFC), and Deployment Image Servicing and Management (DISM) tools, to automate system-files integrity checking. These functions are handled by `Run_CHKDSK_Utility_Execution_Function`, `Run_SFC_Utility_Execution_Function`, and `Run_DISM_Utility_Execution_Function` respectively. 
-
 - Updating Capabilities &rarr; The script uses WinGet, modules such as `PSWindowsUpdate` to perform System, Microsoft Store, and Driver updates, if available. These are handled by `Update_Windows_System_Handle_Function`, `Update_Microsoft_Store_Application_Handle_Function`, and `Update_Windows_System_Drivers_Handle_Function`.
-
 - Network Optimization &rarr; The script aims to change DNS server to Google, changes IRP stack size, configures background apps to utilise less resources, disables Large Send Offload (LSO), Disables Windows Auto Tuning, Disable QoS Packet Scheduler, Disables P2P Update Process, with an aim to improve network performance. These are achieved by 
-
 ```
 Change_DNS_Server_Update_Function
 Change_IRP_Stack_Size_Update_Function
@@ -38,15 +35,12 @@ Disable_Windows_Auto_Tuning_Handle_Function
 Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
 Disable_P2P_Update_Process_Handle_Function
 ```
-
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
-
 - Security Checks &rarr; The script can start Windows Defender to perform a quick/complete scan depending upon last scan and recognise, and kill suspicious processes. There are achieved through
 ```
 Run_Windows_Defender_Scan_Execution_Function
 Analyze_Processes_Handle_Function
 ```
-
 - User Recommendations &rarr; Finally, the script can generate recommendations for the user based on the scan results. This is the job of `Generate_Recommendations_Display_Function`
 
 ## Useage
@@ -55,13 +49,9 @@ Analyze_Processes_Handle_Function
 
 ### If Git is installed
 - Clone the repository by opening a PowerShell terminal and type:
-
 - ```git clone https://github.com/Tx0actical/EpsilonScript```
-
-- `cd` into the repository directory and run:
-
+- `cd` into the repository directory
 - ```cd [Drive]://[Path]/[to]/[Script]```
-
 - ```.\Script.ps1```
 
 ### If Git is not installed
