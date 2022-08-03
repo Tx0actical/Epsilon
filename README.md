@@ -71,17 +71,23 @@ Analyze_Processes_Handle_Function
 
 ## Results
 
-- [ ] ❌ How the result is displayed, formatted and presented to the user, is still a work in progress.
+❌ How the result is displayed, formatted and presented to the user, is still a work in progress.
 
 ## Tasks
 
-- [x] ✅ Complete overall structure of `Script.ps1`, `Network.ps1`, and `Neural_Engine.ps1`
-- [ ] ❌ Function defintions for the remaining functions in `.\Script.ps1`.
-- [ ] ❌ Integrate the main script with `Neural_Engine.ps1`.
-- [ ] ❌ Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
-- [ ] ❌ Add Multi-Threading Support to the `.\Script.ps1` script.
-- [ ] ❌ Research other Neural Networks, study feasibility of integrating/replacing with the current one.
-- [ ] ❌ Feature &rarr; Giving users choice to opt out of certain optimization methods (e.g. Disabling some features in the Network Optimization Section).
+✅ Complete overall structure of `Script.ps1`, `Network.ps1`, and `Neural_Engine.ps1`
+
+❌ Function defintions for the remaining functions in `.\Script.ps1`.
+
+❌ Integrate the main script with `Neural_Engine.ps1`.
+
+❌ Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
+
+❌ Add Multi-Threading Support to the `.\Script.ps1` script.
+
+❌ Research other Neural Networks, study feasibility of integrating/replacing with the current one.
+
+❌ Feature &rarr; Giving users choice to opt out of certain optimization methods (e.g. Disabling some features in the Network Optimization Section).
 
 ## References
 
