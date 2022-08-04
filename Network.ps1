@@ -66,7 +66,7 @@ class Network {
 
     TrainNetwork ([float [][]] $TrainingData, [int]$Epochs) {
         for ($i = 0; $i -lt $Epochs; $i++) {
-            Write-Host "Epoch $i"
+            Write-Host "Epoch $i" -ForegroundColor Blue
             $TrainingSet = $TrainingData | Sort-Object {Get-Random}
             foreach ($row in $TrainingSet) {
                 $InputData  = $row | Select-Object -First $this.Network[0].Count
