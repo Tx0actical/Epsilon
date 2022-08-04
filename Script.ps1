@@ -101,7 +101,7 @@ $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
 $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
 $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
 $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
-$Global:NOP_P2P_DISABLE_FUNCTION_STATUS                     = $null
+
 $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
 $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
 $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
@@ -131,7 +131,7 @@ $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
 
 # Function to save and reload script state from a statefile
-function Reload_Previous_Script_Instance_State_Handle_Function {
+function Save_Previous_Script_Instance_State_Handle_Function {
     [CmdletBinding()] param (
         [Parameter()] [String] $Global:PreviousStateFile
     )
@@ -172,7 +172,7 @@ function Reload_Previous_Script_Instance_State_Handle_Function {
             'NOP_LSO_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                   ;  
             'NOP_ATUN_DISABLE_FUNCTION_STATUS'                  = $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                  ;  
             'NOP_QOS_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                   ;  
-            'NOP_P2P_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_P2P_DISABLE_FUNCTION_STATUS                   ;  
+              
             'MRO_DFRG_EXECUTION_FUNCTION_STATUS'                = $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                ;  
             'MRO_TEMP_UPDATE_FUNCTION_STATUS'                   = $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                   ;  
             'MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS'             = $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS             ;  
@@ -271,7 +271,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
             [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
             [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
-            [Parameter(Position = 13, Mandatory = $True)] [bool] $Global:NOP_P2P_DISABLE_FUNCTION_STATUS,
+            
 
             [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
             [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
@@ -346,6 +346,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
             function Run_CHKDSK_Utility_Execution_Function {
+                Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
                 # Determine volumes present in the system, and run chkdsk on all those volumes
                 $Volume = Get-Volume
                 $Global:VolumeNumber = $Volume.Count
@@ -375,6 +376,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
             function Run_SFC_Utility_Execution_Function {
+                Write-Host "[+] Running SFC" -ForegroundColor Green
                 # run sfc
                 sfc /scannow
                 
@@ -395,6 +397,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
             function Run_DISM_Utility_Execution_Function {
+                Write-Host "[+] Running DISM" -ForegroundColor Green
                 $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
             }
         }
@@ -405,6 +408,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         if($Global:UA_SYS_UPDATE_FUNCTION_STATUS) {
             function Update_Windows_System_Handle_Function {
+                Write-Host "[+] Updating Windows" -ForegroundColor Green
                 # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
                 Install-Module PSWindowsUpdate
                 $UpdateVariable = Get-WindowsUpdate
@@ -424,6 +428,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
             function Update_Microsoft_Store_Application_Handle_Function {
+                Write-Host "[+] Updating Microsoft Store Applications" -ForegroundColor Green
                 # update using winget
                 Write-Host "[*] Checking Microsoft Store Application updates"
                 $UpdateCheck = winget upgrade
@@ -439,6 +444,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
             function Update_Windows_System_Drivers_Handle_Function {
+                Write-Host "[+] Updating Windows System Drivers" -ForegroundColor Green
                 # If the PowerShell Modules Folder is non-existing, it will be created.
                 if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
                     New-Item -ItemType Directory -Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules1 -Force
@@ -467,7 +473,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                         Write-Output '[*] Skipped modifying registry keys' -ForegroundColor White -BackgroundColor Blue
                     }
                 }
-
                 # Add ServiceID for Windows Update
                 Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
                 # Pause and give the service time to update
@@ -489,8 +494,9 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         if($Global:NOP_DNS_UPDATE_FUNCTION_STATUS) {
             function Change_DNS_Server_Update_Function {
+                Write-Host "[+] Changing DNS to Google" -ForegroundColor Green
                 # First, determine the active interface that is connected to internet
-                # Get-WmiObject Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
+                Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
                 # Note down InterfaceAlias name
                 Get-DnsClientServerAddress
                 # change IPv4 and IPv6 DNS servers
@@ -503,32 +509,44 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         }
         if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
             function Change_IRP_Stack_Size_Update_Function {
+                Write-Host "[+] Increasing IRPStackSize value from default to 32" -ForegroundColor Green
+                New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize"
+                New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Value 0x00000020
                 $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
             function Configure_Background_Applications_Settings_Handle_Function {
+                Write-Host "[+] Disabling background apps" -ForegroundColor Green
+                Reg Add HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications /v GlobalUserDisabled /t REG_DWORD /d 1 /f
                 $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
             function Disable_Large_Send_Offload_Handle_Function {
+                Write-Host "[+] Disabling Large Send Offload" -ForegroundColor Green
+                $Global:Adapter = Get-NetAdapter -physical | Where-Object status -eq 'up'
+                foreach ($Object in $Global:Adapter) {
+                    Disable-NetAdapterLso -Name $Object -IPv6 -IPv4
+                }
                 $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
             function Disable_Windows_Auto_Tuning_Handle_Function {
+                Write-Host "[+] Disabling Windows Auto Tuning" -ForegroundColor Green
+                netsh int tcp set global autotuninglevel=disabled
+                netsh int tcp set global autotuninglevel=normal
                 $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
             function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
+                Write-Host "[+] Disabling QoS Packet Scheduler" -ForegroundColor Green
+                foreach ($Object in $Global:Adapter) {
+                    Disable-NetAdapterQos -Name $Object
+                }
                 $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
-            }
-        }
-        if($Global:NOP_P2P_DISABLE_FUNCTION_STATUS) {
-            function Disable_P2P_Update_Process_Handle_Function {
-                $Global:SET_NOP_P2P_NODE_RESULT_DETERMINED = $True
             }
         }
 
@@ -538,16 +556,49 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
             function Run_Disk_Defragmentor_Execution_Function {
+                Write-Host "[+] Runnig Disk Defragmentor" -ForegroundColor Green
+                # Determine volumes present in the system, and run chkdsk on all those volumes
+                $Volume = Get-Volume
+                foreach ($Letter in $Volume.DriveLetter) {
+                    Get-PhysicalDisk | Where-Object {$_.MediaType -eq "SSD"}
+                    Optimize-Volume -DriveLetter $Letter -Verbose
+                }
                 $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
             function Remove_TEMP_Files_Update_Function {
+                Write-Host "[+] Purging Windows TEMP files" -ForegroundColor Green
+                Get-ChildItem -Path "C:\Windows\Temp" *.* -Recurse | Remove-Item -Force -Recurse
                 $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
             function Set_Increase_Pagefile_Size_Update_Function {
+
+                # TODO -> Get-WmiObject is not supported, in PowerShell 7, check other methods
+                # TODO -> Code needs improvement in this function
+
+                # Check if pagefiles are automatically managed
+                if($null -eq (Get-CimInstance Win32_Pagefile)) {
+                    $sys = Get-WmiObject Win32_Computersystem –EnableAllPrivileges
+                    $sys.AutomaticManagedPagefile = $false
+                    $sys.put()
+
+                    # Check pagefile size
+                    Get-WmiObject WIN32_Pagefile | Select-Object Name, InitialSize, MaximumSize, FileSize
+                    $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
+                    if($Pagefile -eq 40000) {
+                        $Pagefile.InitialSize = 40000 # in MB
+                        $Pagefile.MaximumSize = 80000
+                        $Pagefile.put()
+                    }
+                } else {
+                    $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
+                    $Pagefile.InitialSize = 40000 # in MB
+                    $Pagefile.MaximumSize = 80000
+                    $Pagefile.put()
+                }
                 $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
             }
         }
@@ -557,12 +608,24 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # ***************Security Audit Sub-Section***************
         if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
             function Run_Windows_Defender_Scan_Execution_Function {
+                # Check defender status
+                if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
+                    Write-Host "[+] Starting Windows Defender" -ForegroundColor Green
+                    Start-Sleep -Seconds 3
+                    Write-Host "[+] Performing a Quick Scan" -ForegroundColor Green
+                    Update-MpSignature
+                    Start-MpScan -ScanType QuickScan
+                    Remove-MpThreat
+                }
                 $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
             }
         }
         if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
             function Analyze_Processes_Handle_Function {
+                Get-Process | Where-Object -FilterScript {$_.Responding -eq $false} | Stop-Process
                 $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
+
+                # TODO -> Add more parameters to the definition of 'Suspicious Processes'
             }
         }
         
@@ -576,6 +639,33 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         function Generate_Recommendations_Display_Function {
             # check if the system is connected to an AD Domain, if true then prompt user to check all configurations and security policies
             # if and only if the user is a part of the Administrators group or is a Domain Controller (DC)
+
+            if((Get-CimInstance Win32_ComputerSystem).PartOfDomain -eq "True") {
+                Write-Host "[+] System is joined to a domain" -ForegroundColor Blue
+                Write-Host "[+] Generating Recommendations" -ForegroundColor Green
+                Start-Sleep -Seconds 3
+                Write-Host "[1] Eliminate Admin-Like Permissions Where Possible"
+                Write-Host "[2] Eliminate Permanent Membership In Security Groups"
+                Write-Host "[3] Lock Down Service Accounts"
+                Write-Host "[4] Don’t Let Employees Have Admin Accounts On Their Workstationse"
+                Write-Host "[5] Create or update incident recovery plans"
+                Write-Host "[6] Implement business-centric lifecycle management for IT assets"
+                Write-Host "[7] Use host-based firewalls to control and secure communications"
+                Write-Host "[8] Simplify security for end users"
+                Write-Host "[9] Migrate critical assets to pristine forests with stringent security and monitoring requirements"
+                Write-Host "[10] Implement configuration management, review compliance regularly, and evaluate settings with each new hardware or software version"
+                Write-Host "[11] Implement secure development lifecycle programs for custom applications"
+                Write-Host "[12] Decommission legacy systems and applications"
+                Write-Host "[13] Isolate legacy systems and applications"
+                Write-Host "[14] Implement least-privilege, role-based access controls for administration of the directory, its supporting infrastructure, and domain-joined systems"
+                Write-Host "[15] Identify critical assets, and prioritize their security and monitoring"
+                Write-Host "[16] Use application allowslists on domain controllers, administrative hosts, and other sensitive systems"
+                Write-Host "[17] Implement secure administrative hosts"
+                Write-Host "[18] Implement controls to grant temporary membership in privileged groups when needed"
+                Write-Host "[19] Eliminate permanent membership in highly privileged groups"
+                Write-Host "[20] Monitor sensitive Active Directory objects for modification attempts and Windows for events that may indicate attempted compromise"
+                Write-Host "[21] Deploy and promptly update antivirus and antimalware software across all systems and monitor for attempts to remove or disable it"
+            }
         }
 
         # ***************END OF -> Recommendations Sub-Section***************
