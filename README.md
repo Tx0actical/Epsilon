@@ -36,7 +36,7 @@ Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
 Disable_P2P_Update_Process_Handle_Function
 ```
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility which is handled by `Run_Disk_Defragmentor_Execution_Function`, and a couple of registry tweaks which is the duty of `Remove_TEMP_Files_Update_Function` and `Set_Increase_Pagefile_Size_Update_Function`, as they seek to flush temporary files and increase pagefile size, respectively.
-- Security Checks &rarr; The script can start Windows Defender to perform a quick/complete scan depending upon last scan and recognise, and kill suspicious processes. There are achieved through
+- Security Checks &rarr; The script can start Windows Defender to perform a quick/complete scan depending upon last scan and recognise, and kill suspicious/not responding processes. There are achieved through
 ```
 Run_Windows_Defender_Scan_Execution_Function
 Analyze_Processes_Handle_Function
@@ -78,3 +78,4 @@ Analyze_Processes_Handle_Function
 - A guide to Optimizing PowerShell Scripts can be found [here](https://www.itprotoday.com/powershell/tips-optimizing-powershell-scripts)
 - The Official PowerShell Documentation by Mircosoft, [link](https://docs.microsoft.com/en-us/powershell/)
 - An awesome blog on PowerShell Multithreading &rarr; [link](https://adamtheautomator.com/powershell-multithreading/)
+- [Tips](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/best-practices-for-securing-active-directory) for hardening Active Directory networks 
