@@ -65,7 +65,7 @@ Analyze_Processes_Handle_Function
 ## Tasks
 
 - [x] Complete overall structure of `Script.ps1`, `Network.ps1`, and `Neural_Engine.ps1`
-- [ ] Function defintions for the remaining functions in `.\Script.ps1`.
+- [x] Function defintions for the remaining functions in `.\Script.ps1`.
 - [ ] Integrate the main script with `Neural_Engine.ps1`.
 - [ ] Develop a Windows Log Parser, language independent, to collect and parse logs into a suitable format like `json`, `xml`, `csv`, etc.
 - [ ] Add Multi-Threading Support to the `.\Script.ps1` script.
