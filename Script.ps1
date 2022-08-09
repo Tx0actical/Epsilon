@@ -23,11 +23,11 @@ Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     # Set the RunOnce key
-    $Global:RegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
-    $Global:RegistryName = "LastRestartCausedByScript"
-    $Global:RegistryValue = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $PSCommandPath"
-    New-Item -Path $Global:RegistryPath -Name $Global:RegistryName
-    New-ItemProperty -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
+    $Global:RegistryPath    = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
+    $Global:RegistryName    = "LastRestartCausedByScript"
+    $Global:RegistryValue   = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $PSCommandPath"
+    New-Item            -Path $Global:RegistryPath -Name $Global:RegistryName
+    New-ItemProperty    -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
 
     # There might be no need to remove registry key after the script is run, because, Windows always removes RunOnce key after use.
 }
@@ -141,6 +141,7 @@ function Save_Previous_Script_Instance_State_Handle_Function {
         # load variable state information from the statefile
         Get-Content -Path Resume.json
     } else {
+
         # create a statefile
         $Global:ScriptVariableState = @{
             'CurrentDate'                                       = $Global:CurrentDate                                       ;
@@ -497,10 +498,13 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 Write-Host "[+] Changing DNS to Google" -ForegroundColor Green
                 # First, determine the active interface that is connected to internet
                 Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
+
                 # Note down InterfaceAlias name
                 Get-DnsClientServerAddress
+
                 # change IPv4 and IPv6 DNS servers
                 Set-DNSClientServerAddress "InterfaceAlias" –ServerAddresses ("8.8.8.8", "8.8.4.4")
+
                 # clear DNS cache
                 Clear-DnsClientCache
 

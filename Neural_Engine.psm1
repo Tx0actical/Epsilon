@@ -60,7 +60,7 @@ class Neural_Engine {
         return $Output
     }
 
-    # *********************************BackPropagation Section*******************************
+    # *********************************BackPropagation Section*********************************
 
     AddError([float] $err) {
         $this.NetworkErrors += $err
@@ -124,4 +124,6 @@ class Neural_Engine {
         $this.Weights[$NetworkInputs.Count] += -1 * $err * $this.LearningRate
     }
     # ***********END OF -> Input Layer*************
+
+    # *********************************END OF -> BackPropagation Section*********************************
 }
