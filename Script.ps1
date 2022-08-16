@@ -2,10 +2,14 @@
 
 Write-Host "[*] Importing Modules" -ForegroundColor Blue
 
-Import-Module -Name Microsoft.PowerShell.Diagnostics
-Import-Module -Name Microsoft.PowerShell.Utility
-Import-Module -Name Microsoft.PowerShell.Management
-Import-Module -Name Microsoft.PowerShell.Core
+try {
+    Import-Module -Name Microsoft.PowerShell.Diagnostics
+    Import-Module -Name Microsoft.PowerShell.Utility
+    Import-Module -Name Microsoft.PowerShell.Management
+    Import-Module -Name Microsoft.PowerShell.Core
+} catch {
+    Write-Host "[-] Could not Import Necessary Modules" -ForegroundColor Red
+}
 
 # Firstly, script records itself into the event log, for determination of last runtime.
 
@@ -39,7 +43,6 @@ function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
         # ********************END OF -> Zero Section********************
         
         # ********************Pre-Initialization Section********************
-
 
 # Get OS version
 $Global:HostOSVersion = Get-ComputerInfo | Select-Object WindowsProductName
@@ -111,100 +114,152 @@ $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
 
 # Function to save and reload script state from a statefile
-function Save_Previous_Script_Instance_State_Handle_Function {
+function Record_Previous_Script_Instance_State_Handle_Function {
+    
+    # function to record current state including variables and other state information used when resuming the script after restart.
+    # create a statefile
+
+    $Global:ScriptVariableState = @{
+        'CurrentDate'                                       = $Global:CurrentDate                                       ;
+        'HostOSVersion'                                     = $Global:HostOSVersion                                     ;
+        'HostPowershellVersion'                             = $Global:HostPowershellVersion                             ;
+        'IncompatibleOSVersion'                             = $Global:IncompatibleOSVersion                             ;
+        'MinimumRequiredPowershellVersion'                  = $Global:MinimumRequiredPowershellVersion                  ;
+        'RegistryPath'                                      = $Global:RegistryPath                                      ;
+        'RegistryName'                                      = $Global:RegistryName                                      ;
+        'RegistryValue'                                     = $Global:RegistryValue                                     ;                                         
+        'LastDiskOptimizeDate'                              = $Global:LastDiskOptimizeDate                              ;                              
+        'DaysSinceDiskLastOptimized'                        = $Global:DaysSinceDiskLastOptimized                        ;
+        'VolumeNumber'                                      = $Global:VolumeNumber                                      ;  
+        'LastSytemRebootDate'                               = $Global:LastSytemRebootDate                               ; 
+        'RestartStatusVariable'                             = $Global:RestartStatusVariable                             ;  
+
+        'INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'      = $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS      ;  
+        'OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'     = $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS     ;  
+
+        'SFA_CHKDSK_EXECUTION_FUNCTION_STATUS'              = $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS              ; 
+        'SFA_SFC_EXECUTION_FUNCTION_STATUS'                 = $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                 ;  
+        'SFA_DISM_EXECUTION_FUNCTION_STATUS'                = $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                ;  
+        'UA_SYS_UPDATE_FUNCTION_STATUS'                     = $Global:UA_SYS_UPDATE_FUNCTION_STATUS                     ;  
+        'UA_STORE_UPDATE_FUNCTION_STATUS'                   = $Global:UA_STORE_UPDATE_FUNCTION_STATUS                   ;  
+        'UA_DRIVER_UPDATE_FUNCTION_STATUS'                  = $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                  ;  
+        'NOP_DNS_UPDATE_FUNCTION_STATUS'                    = $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                    ;  
+        'NOP_IRPSS_UPDATE_FUNCTION_STATUS'                  = $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                  ;  
+        'NOP_BAPP_CONFIGURE_FUNCTION_STATUS'                = $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                ; 
+        'NOP_LSO_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                   ;  
+        'NOP_ATUN_DISABLE_FUNCTION_STATUS'                  = $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                  ;  
+        'NOP_QOS_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                   ;  
+            
+        'MRO_DFRG_EXECUTION_FUNCTION_STATUS'                = $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                ;  
+        'MRO_TEMP_UPDATE_FUNCTION_STATUS'                   = $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                   ;  
+        'MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS'             = $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS             ;  
+        'SA_DFNDR_DISABLE_EXECUTION_STATUS'                 = $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                 ;  
+        'SA_PR_HANDLE_FUNCTION_STATUS'                      = $Global:SA_PR_HANDLE_FUNCTION_STATUS                      ;  
+
+        'SET_SFA_CHKDSK_NODE_RESULT_DETERMINED'             = $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED             ;  
+        'SET_SFA_SFC_NODE_RESULT_DETERMINED'                = $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                ; 
+        'SET_SFA_DISM_NODE_RESULT_DETERMINED'               = $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED               ;  
+        'SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED'          = $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED          ;  
+        'SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED        ;  
+        'SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED       ;  
+        'SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED'         = $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED         ;  
+        'SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED       ;  
+        'SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED'     = $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED     ; 
+        'SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED        ; 
+        'SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED       ;  
+        'SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED        ;  
+        'SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED        ;  
+        'SET_MRO_DFRG_NODE_RESULT_DETERMINED'               = $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED               ;  
+        'SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED        ;  
+        'SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED'  = $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED  ;  
+        'SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED       ;  
+        'SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED'           = $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED           ;  
+    };
+    $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
+}
+
+function Reload_Previous_Script_Instance_State_Handle_Function {
     [CmdletBinding()] param (
         [Parameter()] [String] $Global:PreviousStateFile
     )
-    # function to record current state including variables and other state information used when resuming the script after restart.
-    # check if a state file is stored previously
-    if ($PreviousStateFile) {
-        # load variable state information from the statefile
-        Get-Content -Path Resume.json
-    } else {
+    Write-Host "[*] Importing previous instance variable state"
+    Start-Sleep -Seconds 3
 
-        # create a statefile
-        $Global:ScriptVariableState = @{
-            'CurrentDate'                                       = $Global:CurrentDate                                       ;
-            'HostOSVersion'                                     = $Global:HostOSVersion                                     ;
-            'HostPowershellVersion'                             = $Global:HostPowershellVersion                             ;
-            'IncompatibleOSVersion'                             = $Global:IncompatibleOSVersion                             ;
-            'MinimumRequiredPowershellVersion'                  = $Global:MinimumRequiredPowershellVersion                  ;
-            'RegistryPath'                                      = $Global:RegistryPath                                      ;
-            'RegistryName'                                      = $Global:RegistryName                                      ;
-            'RegistryValue'                                     = $Global:RegistryValue                                     ;                                         
-            'LastDiskOptimizeDate'                              = $Global:LastDiskOptimizeDate                              ;                              
-            'DaysSinceDiskLastOptimized'                        = $Global:DaysSinceDiskLastOptimized                        ;
-            'VolumeNumber'                                      = $Global:VolumeNumber                                      ;  
-            'LastSytemRebootDate'                               = $Global:LastSytemRebootDate                               ; 
-            'RestartStatusVariable'                             = $Global:RestartStatusVariable                             ;  
+    # Restore script state by loading variable state information from the statefile
+    $Global:State = Get-Content -Path $Global:ScriptVariableState | ConvertFrom-Json
 
-            'INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'      = $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS      ;  
-            'OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'     = $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS     ;  
+    $Global:CurrentDate                                         = $Global:State.CurrentDate
+    $Global:LastDiskOptimizeDate                                = $Global:State.LastDiskOptimizeDate
+    $Global:DaysSinceDiskLastOptimized                          = $Global:State.DaysSinceDiskLastOptimized
+    $Global:VolumeNumber                                        = $Global:State.VolumeNumber
+    $Global:LastSytemRebootDate                                 = $Global:State.LastSytemRebootDate
+    $Global:RestartStatusVariable                               = $Global:State.RestartStatusVariable
 
-            'SFA_CHKDSK_EXECUTION_FUNCTION_STATUS'              = $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS              ; 
-            'SFA_SFC_EXECUTION_FUNCTION_STATUS'                 = $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                 ;  
-            'SFA_DISM_EXECUTION_FUNCTION_STATUS'                = $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                ;  
-            'UA_SYS_UPDATE_FUNCTION_STATUS'                     = $Global:UA_SYS_UPDATE_FUNCTION_STATUS                     ;  
-            'UA_STORE_UPDATE_FUNCTION_STATUS'                   = $Global:UA_STORE_UPDATE_FUNCTION_STATUS                   ;  
-            'UA_DRIVER_UPDATE_FUNCTION_STATUS'                  = $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                  ;  
-            'NOP_DNS_UPDATE_FUNCTION_STATUS'                    = $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                    ;  
-            'NOP_IRPSS_UPDATE_FUNCTION_STATUS'                  = $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                  ;  
-            'NOP_BAPP_CONFIGURE_FUNCTION_STATUS'                = $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                ; 
-            'NOP_LSO_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                   ;  
-            'NOP_ATUN_DISABLE_FUNCTION_STATUS'                  = $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                  ;  
-            'NOP_QOS_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                   ;  
-              
-            'MRO_DFRG_EXECUTION_FUNCTION_STATUS'                = $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                ;  
-            'MRO_TEMP_UPDATE_FUNCTION_STATUS'                   = $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                   ;  
-            'MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS'             = $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS             ;  
-            'SA_DFNDR_DISABLE_EXECUTION_STATUS'                 = $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                 ;  
-            'SA_PR_HANDLE_FUNCTION_STATUS'                      = $Global:SA_PR_HANDLE_FUNCTION_STATUS                      ;  
+    $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $Global:State.INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
+    $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $Global:State.OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
 
-            'SET_SFA_CHKDSK_NODE_RESULT_DETERMINED'             = $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED             ;  
-            'SET_SFA_SFC_NODE_RESULT_DETERMINED'                = $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                ; 
-            'SET_SFA_DISM_NODE_RESULT_DETERMINED'               = $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED               ;  
-            'SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED'          = $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED          ;  
-            'SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED        ;  
-            'SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED       ;  
-            'SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED'         = $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED         ;  
-            'SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED       ;  
-            'SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED'     = $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED     ; 
-            'SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED        ; 
-            'SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED       ;  
-            'SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED        ;  
-            'SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED        ;  
-            'SET_MRO_DFRG_NODE_RESULT_DETERMINED'               = $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED               ;  
-            'SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED        ;  
-            'SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED'  = $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED  ;  
-            'SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED       ;  
-            'SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED'           = $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED           ;  
-        };
-        $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
-    }
+    $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $Global:State.SFA_CHKDSK_EXECUTION_FUNCTION_STATUS
+    $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $Global:State.SFA_SFC_EXECUTION_FUNCTION_STATUS
+    $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $Global:State.SFA_DISM_EXECUTION_FUNCTION_STATUS
+    $Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $Global:State.UA_SYS_UPDATE_FUNCTION_STATUS
+    $Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $Global:State.UA_STORE_UPDATE_FUNCTION_STATUS
+    $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $Global:State.UA_DRIVER_UPDATE_FUNCTION_STATUS
+    $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $Global:State.NOP_DNS_UPDATE_FUNCTION_STATUS
+    $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $Global:State.NOP_IRPSS_UPDATE_FUNCTION_STATUS
+    $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $Global:State.NOP_BAPP_CONFIGURE_FUNCTION_STATUS
+    $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $Global:State.NOP_LSO_DISABLE_FUNCTION_STATUS
+    $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $Global:State.NOP_ATUN_DISABLE_FUNCTION_STATUS
+    $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $Global:State.NOP_QOS_DISABLE_FUNCTION_STATUS
+
+    $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $Global:State.MRO_DFRG_EXECUTION_FUNCTION_STATUS
+    $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $Global:State.MRO_TEMP_UPDATE_FUNCTION_STATUS
+    $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $Global:State.MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS
+    $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $Global:State.SA_DFNDR_DISABLE_EXECUTION_STATUS
+    $Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $Global:State.SA_PR_HANDLE_FUNCTION_STATUS
+
+    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $Global:State.SET_SFA_CHKDSK_NODE_RESULT_DETERMINED
+    $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $Global:State.SET_SFA_SFC_NODE_RESULT_DETERMINED
+    $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $Global:State.SET_SFA_DISM_NODE_RESULT_DETERMINED
+    $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $Global:State.SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $Global:State.SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $Global:State.SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $Global:State.SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $Global:State.SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $Global:State.SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $Global:State.SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED
+    $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED
+    $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $Global:State.SET_MRO_DFRG_NODE_RESULT_DETERMINED
+    $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $Global:State.SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $Global:State.SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED
+    $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $Global:State.SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED
+    $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $Global:State.SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED
+    
 }
 
 function Resume_Script_Execution_With_Previous_State_Handle_Function {
-    # time elapsed since the script was last run
+
     $DaysSinceScriptLastRun     = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Days
     $HoursSinceScriptLastRun    = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Hours
     $MinutesSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Minutes
     $SecondsSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Seconds
 
     # 300 seconds, a typical time to restart
+    # TODO -> This logic is probably not sufficient, or even incorrect. A deeper look is required to make it more robust.
     if(($DaysSinceScriptLastRun -eq 0) -and ($HoursSinceScriptLastRun -eq 0) -and ($MinutesSinceScriptLastRun -eq 0) -and ($SecondsSinceScriptLastRun -ge 300)) {
         if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
-            # TODO -> This logic is probably not sufficient, or even incorrect. A deeper look is required.
+
             Write-Host "[*] Checking last boot cause"
             Start-Sleep -Seconds 1
             Write-Host "[+] Last restart was caused by a script instance"
             Write-Host "[*] Checking last boot cause"
             Start-Sleep -Seconds 1
-            Write-Host "[+] Registry key successfully set before last restart"
-
-            Write-Host "[*] Importing previous instance variable state"
-            Start-Sleep -Seconds 3
-
+            Write-Host "[+] RunOnce key successfully set before last restart"
+            
             # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
+            Write-Host "[*] Injecting previous variable state in current instance" -ForegroundColor Blue
+            Reload_Previous_Script_Instance_State_Handle_Function
         }
         
     } else {
@@ -213,6 +268,7 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
 }
 
 #Requires -Version 7.2.0
+
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
     Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
     Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur." -ForegroundColor White -BackgroundColor Blue
@@ -257,39 +313,38 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
     # TO DO: Think about more sources of information for behaviour of Windows Systems
 
-    # Function to keep track of inputs after all node probability determination
-    # functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
-    # where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
-    # [Parameter(Mandatory = $True)] flag can be used to determine which function was not assigned a value by the sectional functions
-    # and that may provide necessary debug information and provide necessary checks during script execution.
+    <#  Function to keep track of inputs after all node probability determination
+        functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
+        where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
+        [Parameter(Mandatory = $True)] flag can be used to determine which function was not assigned a value by the sectional functions
+        and that may provide necessary debug information and provide necessary checks during script execution. #>
 
 
     function __Input_Dispatch_Center_Control_Function__ {
         [CmdletBinding()] param(
-            [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS,
-            [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS,
-            [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS,
-            [Parameter(Position = 3,  Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS,
+            [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   ,
+            [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS           ,
+            [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS              ,
+            [Parameter(Position = 3,  Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS             ,
 
-            [Parameter(Position = 4,  Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS,
-            [Parameter(Position = 5,  Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS,
-            [Parameter(Position = 6,  Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS,
+            [Parameter(Position = 4,  Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS                  ,
+            [Parameter(Position = 5,  Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS                ,
+            [Parameter(Position = 6,  Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS               ,
 
-            [Parameter(Position = 7,  Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS,
-            [Parameter(Position = 8,  Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS,
-            [Parameter(Position = 9,  Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS,
-            [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS,
-            [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS,
-            [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS,
+            [Parameter(Position = 7,  Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                 ,
+            [Parameter(Position = 8,  Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS               ,
+            [Parameter(Position = 9,  Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS             ,
+            [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                ,
+            [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS               ,
+            [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                ,
 
-            [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS,
-            [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS,
-            [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS,
+            [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS             ,
+            [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                ,
+            [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS          ,
 
-            [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS,
+            [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS              ,
             [Parameter(Position = 18, Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
         )
-
 
         # ***************Base Information Sub-Section***************
 
@@ -298,18 +353,14 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     #     
     # }
 
-    # Copilot generated code for function Get_System_Information_Handle_Function
-
     function Parse_Windows_Event_Log_Handle_Function {
-        # Parse specific events, count their number
-        # subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
-        # of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
-        # for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
-        # then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
 
-        # variables in this function should be global
+        <#  Parse specific events, count their number subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
+            of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
+            for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
+            then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
 
-        
+            variables in this function should be global #>
         
         # Debugging outputs
         Write-Host "[*] Date today is $Global:CurrentDate" -ForegroundColor White -BackgroundColor Blue
@@ -354,9 +405,10 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************System Files Audit Sub-Section***************
 
         if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
-            Start-Job -ScriptBlock {
+            $Global:JOB_CHKDSK = Start-Job -ScriptBlock {
                 function Run_CHKDSK_Utility_Execution_Function {
                     Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
+
                     # Determine volumes present in the system, and run chkdsk on all those volumes
                     $Volume = Get-Volume
                     $Global:VolumeNumber = $Volume.Count
@@ -655,28 +707,25 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     # that will happen only when the Base Information Sub-Section is properly initialized. Hence, this variable acts as a checker.
 
 
-    
-
         # ********************Probabilistic Activation Determination (PAD) Section********************
 
 
-    # Functions within this section provides input to the section containing the __Input_Dispatch_Center_Control_Function__ function. Earlier, this Section was a Sub-section
-    # (until commit -> 27bb259), but it has been converted because it essentially computes values and pass it to __Input_Dispatch_Center_Control_Function__ function which ACTUALLY
-    # does the changes described in that. So, a Section giving input to itself isn't a great idea - it wouldn't affect the functioning of code per se, because these functions are divided
-    # into the so-called 'Sections and Sub-Sections' on the basis of comments just to keep track of complexity - as it might be a source of confusion. 
+    <#  Functions within this section provides input to the section containing the __Input_Dispatch_Center_Control_Function__ function. Earlier, this Section was a Sub-section
+        (until commit -> 27bb259), but it has been converted because it essentially computes values and pass it to __Input_Dispatch_Center_Control_Function__ function which ACTUALLY
+        does the changes described in that. So, a Section giving input to itself isn't a great idea - it wouldn't affect the functioning of code per se, because these functions are divided
+        into the so-called 'Sections and Sub-Sections' on the basis of comments just to keep track of complexity - as it might be a source of confusion. #>
 
 
         # ***************PAD Sub-Section-1***************
 
     # Individul Perceptrons to determine activation of functions depending upon the number of contributing factors
     function Invoke_Perceptron_For_Stop_Error_Parameters_Activation_Determination_Function {
-        # This function determines activations of specific functions that might help resolve stop errors.
-        # The inputs will be the number of events that have been detected with respect to stop errors, which will be fetched from the Windows Event Logs.
-        # The weights will be the impact of a function in resolving the problem. Higher impact functions will have more weight.
+        <#  This function determines activations of specific functions that might help resolve stop errors.
+            The inputs will be the number of events that have been detected with respect to stop errors, which will be fetched from the Windows Event Logs.
+            The weights will be the impact of a function in resolving the problem. Higher impact functions will have more weight.
+            Bad driver configuration, Software updates, Hardware failures, Memory failures, Power failures, Disk Errors might be the cause #>
 
-        # Bad driver configuration, Software updates, Hardware failures, Memory failures, Power failures, Disk Errors might be the cause.
-
-        Write-Host "[*] Checking if StopError is a potiential problem vector" -ForegroundColor White -BackgroundColor Blue
+        Write-Host "[*] Checking if StopError is a potiential problem vector" -ForegroundColor Blue
 
         
     }
@@ -692,20 +741,19 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     }
 
     function Invoke_Perceptron_For_Security_Audit_Parameters_Activation_Determination_Function {
-        # This function will check if relevant security controls are present like Windows Defender logs, or logs generated by third-party AV software, wether or not scanning is done.
-        # This might include system updates and other parameters related to security. And the most relevant functions that can solve the problem will be assigned higher weights.
+        <#  This function will check if relevant security controls are present like Windows Defender logs, or logs generated by third-party AV software, wether or not scanning is done.
+            This might include system updates and other parameters related to security. And the most relevant functions that can solve the problem will be assigned higher weights. #>
+        
         Write-Host "[*] Checking if system wide security controls are present" -ForegroundColor White -BackgroundColor Blue
 
     }
 
     function Invoke_Perceptron_For_Network_Opmitization_Parameters_Activation_Determination_Function {
-        # This function will evaluate the network connection and performance, and try to optimize them.
-        # Input parameters can be connection speed, or simply the presence of parameters that 
+        <#  This function will evaluate the network connection and performance, and try to optimize them.
+            Input parameters can be connection speed, or simply the presence of parameters that #>
     }
 
         # **************Function Call Sub-Section***************
-
-    
     
         # **************END OF -> Function Call Sub-Section***************
 
@@ -713,13 +761,13 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # ***************PAD Sub-Section-2***************
 
-    # The reason why separate functions are required to pass the values to __Input_Dispatch_Center_Control_Function__ when it can be done right within the Perceptron functions is because all the issues require
-    # their own separate result and that is possible by having separate functions of handling each issue.
+    <#  The reason why separate functions are required to pass the values to __Input_Dispatch_Center_Control_Function__ when it can be done right within the Perceptron functions is because all the issues require
+        their own separate result and that is possible by having separate functions of handling each issue. #>
 
     function Forward_StopError_Fixing_Parameters_Fowarding_Function {
-        # here parameters mean which functions are required to be called in case Part-1 of PAD has determined StopError events 
-        # as a regular happening that necessitates calling of measures and methods in the functions that were defined to
-        # fix a particular type of error, in this case a StopError
+        <#  here parameters mean which functions are required to be called in case Part-1 of PAD has determined StopError events 
+            as a regular happening that necessitates calling of measures and methods in the functions that were defined to
+            fix a particular type of error, in this case a StopError #>
 
         # This function will take input from the Perceptron that determines the activation of the functions
         
@@ -731,8 +779,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Forward_Memory_Fixing_Parameters_Fowarding_Function {
         # this function determines
 
-        Write-Host "[*] One of the problems were found out to be Bad memory" -ForegroundColor White -BackgroundColor Blue
-        # call to IDCC Function
+        Write-Host "[+] One of the problems were found out to be Bad memory" -ForegroundColor Green
         __Input_Dispatch_Center_Control_Function__
     }
 
@@ -742,23 +789,19 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # ********************Output Handling Section********************
 
 
-    # Output function will collect exit codes from all executed,
-    # functions and will give a green light when all are boolean true
-    # after that the system might proceed to restart for a final time
+    <#  Output function will collect exit codes from all executed,
+        functions and will give a green light when all are boolean true
+        after that the system might proceed to restart for a final time #>
 
     function __Output_Dispatch_Center_Control_Function__ {
-        # if all functions determine their outputs successfully, then this function will set the
-        # $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
-        # This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system.
+        <#  if all functions determine their outputs successfully, then this function will set the
+            $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
+            This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system. #>
 
         if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
-
             if($Global:SET_UA_SYS_NODE_RESULT_DETERMINED -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED) {
-
                 if($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED) {
-
                     if($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED) {
-
                         if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
 
                             # if all the above are true then the system will be ready for final restart and $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS will be set to true
@@ -786,12 +829,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # **************END OF -> Function Call Sub-Section***************
 
-    # When everything is okay, system will restart for finally although this behaviour can be updated
-    # because of potiential restarts in between the script. For eg., when the system updates some 
-    # registry values, among other things. That might be a pain for the user.
+    <#  When everything is okay, system will restart for finally although this behaviour can be updated
+        because of potiential restarts in between the script. For eg., when the system updates some 
+        registry values, among other things. That might be a pain for the user.
 
-    # Another version to handle restart-needed-to-apply-changes, is to postpone the restart until all the operations are
-    # completed and then restarting the system, instead of restarting the system right away, in the middle of script execution.
+        Another version to handle restart-needed-to-apply-changes, is to postpone the restart until all the operations are
+        completed and then restarting the system, instead of restarting the system right away, in the middle of script execution. #>
 
     function Set_Ready_For_Final_Restart_Handle_Function {
         [CmdletBinding()] param(
