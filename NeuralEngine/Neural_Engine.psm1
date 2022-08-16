@@ -25,10 +25,10 @@ class Neural_Engine {
         }
 
         $this.Weights = [float[]]::new($NumberOfInputs + 1) # +1 for bias
+        
         for($i = 0; $i -lt $NumberOfInputs + 1; $i++) {
             $this.Weights[$i] = (Get-Random -Minimum -10 -Maximum 10) / 10 # Weight is random between -1 and 1   
         }
-        
     }
 
     [float] Get_Output([float[]] $InputValues) {
