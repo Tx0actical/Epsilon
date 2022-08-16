@@ -41,7 +41,6 @@ Disable_P2P_Update_Process_Handle_Function
 Run_Windows_Defender_Scan_Execution_Function
 Analyze_Processes_Handle_Function
 ```
-- User Recommendations &rarr; Finally, the script can generate recommendations for the user based on the scan results. This is the job of `Generate_Recommendations_Display_Function`
 
 ## Useage
 
