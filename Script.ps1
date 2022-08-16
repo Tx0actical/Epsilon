@@ -1,13 +1,16 @@
         # ********************Zero Section********************
 
+Write-Host "[*] Importing Modules" -ForegroundColor Blue
+
 Import-Module -Name Microsoft.PowerShell.Diagnostics
 Import-Module -Name Microsoft.PowerShell.Utility
 Import-Module -Name Microsoft.PowerShell.Management
+Import-Module -Name Microsoft.PowerShell.Core
 
-# Firstly, script records itself into the event log, for determining when the script was last run.
+# Firstly, script records itself into the event log, for determination of last runtime.
 
-New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "AutomaticScript has started"
-Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "AutomaticScript has started"  
+New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
+Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
 Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 # This section will first check the registry value that is set when the computer is restarted in the middle of script execution.
@@ -23,6 +26,7 @@ Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     # Set the RunOnce key
+    Write-Host "[+] Setting runonce Registry key" -ForegroundColor Blue
     $Global:RegistryPath    = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
     $Global:RegistryName    = "LastRestartCausedByScript"
     $Global:RegistryValue   = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $PSCommandPath"
@@ -30,30 +34,6 @@ function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     New-ItemProperty    -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
 
     # There might be no need to remove registry key after the script is run, because, Windows always removes RunOnce key after use.
-}
-
-function Resume_Script_Execution_With_Previous_State_Handle_Function {
-    # time elapsed since the script was last run
-    $DaysSinceScriptLastRun     = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Days
-    $HoursSinceScriptLastRun    = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Hours
-    $MinutesSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Minutes
-    $SecondsSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Seconds
-
-    # 300 seconds, a typical time to restart
-    if(($DaysSinceScriptLastRun -eq 0) -and ($HoursSinceScriptLastRun -eq 0) -and ($MinutesSinceScriptLastRun -eq 0) -and ($SecondsSinceScriptLastRun -ge 300)) {
-        if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
-            
-            Write-Host "[*] Checking last boot cause"
-            Write-Host "[+] Last restart was caused by a script instance"
-            Write-Host "[*] Checking last boot cause"
-            Write-Host "[+] Registry key successfully set before last restart"
-
-            # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
-        }
-        
-    } else {
-        Write-Host "[+] Last restart was not caused by the script"
-    }
 }
 
         # ********************END OF -> Zero Section********************
@@ -203,6 +183,35 @@ function Save_Previous_Script_Instance_State_Handle_Function {
     }
 }
 
+function Resume_Script_Execution_With_Previous_State_Handle_Function {
+    # time elapsed since the script was last run
+    $DaysSinceScriptLastRun     = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Days
+    $HoursSinceScriptLastRun    = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Hours
+    $MinutesSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Minutes
+    $SecondsSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Seconds
+
+    # 300 seconds, a typical time to restart
+    if(($DaysSinceScriptLastRun -eq 0) -and ($HoursSinceScriptLastRun -eq 0) -and ($MinutesSinceScriptLastRun -eq 0) -and ($SecondsSinceScriptLastRun -ge 300)) {
+        if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
+            # TODO -> This logic is probably not sufficient, or even incorrect. A deeper look is required.
+            Write-Host "[*] Checking last boot cause"
+            Start-Sleep -Seconds 1
+            Write-Host "[+] Last restart was caused by a script instance"
+            Write-Host "[*] Checking last boot cause"
+            Start-Sleep -Seconds 1
+            Write-Host "[+] Registry key successfully set before last restart"
+
+            Write-Host "[*] Importing previous instance variable state"
+            Start-Sleep -Seconds 3
+
+            # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
+        }
+        
+    } else {
+        Write-Host "[+] Last restart was not caused by the script"
+    }
+}
+
 #Requires -Version 7.2.0
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
     Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
@@ -345,32 +354,34 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************System Files Audit Sub-Section***************
 
         if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
-            function Run_CHKDSK_Utility_Execution_Function {
-                Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
-                # Determine volumes present in the system, and run chkdsk on all those volumes
-                $Volume = Get-Volume
-                $Global:VolumeNumber = $Volume.Count
-                $i = 0
-                foreach ($Letter in $Volume.DriveLetter) {
-                    if($i -eq $Global:VolumeNumber) {
-                        break
-                    } else {
-                        # run chkdsk on all volumes
-                        Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
-                        chkdsk "$($Volume.DriveLetter[$i]):" /r
-                        if($LASTEXITCODE -eq 0) {
-                            Write-Host "[*] No errors were found."
-                        } elseif ($LASTEXITCODE -eq 1) {
-                            Write-Host "[*] Errors were found and fixed."
-                        } elseif ($LASTEXITCODE -eq 2) {
-                            Write-Host "[*] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
-                        } elseif ($LASTEXITCODE -eq 3) {
-                            Write-Host "[*] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
+            Start-Job -ScriptBlock {
+                function Run_CHKDSK_Utility_Execution_Function {
+                    Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
+                    # Determine volumes present in the system, and run chkdsk on all those volumes
+                    $Volume = Get-Volume
+                    $Global:VolumeNumber = $Volume.Count
+                    $i = 0
+                    foreach ($Letter in $Volume.DriveLetter) {
+                        if($i -eq $Global:VolumeNumber) {
+                            break
+                        } else {
+                            # run chkdsk on all volumes
+                            Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
+                            chkdsk "$($Volume.DriveLetter[$i]):" /r
+                            if($LASTEXITCODE -eq 0) {
+                                Write-Host "[*] No errors were found."
+                            } elseif ($LASTEXITCODE -eq 1) {
+                                Write-Host "[*] Errors were found and fixed."
+                            } elseif ($LASTEXITCODE -eq 2) {
+                                Write-Host "[*] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
+                            } elseif ($LASTEXITCODE -eq 3) {
+                                Write-Host "[*] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
+                            }
+                            $i++
                         }
-                        $i++
                     }
+                    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
                 }
-                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
             }
         }
         
@@ -497,13 +508,10 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 Write-Host "[+] Changing DNS to Google" -ForegroundColor Green
                 # First, determine the active interface that is connected to internet
                 Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
-
                 # Note down InterfaceAlias name
                 Get-DnsClientServerAddress
-
                 # change IPv4 and IPv6 DNS servers
                 Set-DNSClientServerAddress "InterfaceAlias" –ServerAddresses ("8.8.8.8", "8.8.4.4")
-
                 # clear DNS cache
                 Clear-DnsClientCache
 
@@ -613,9 +621,9 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             function Run_Windows_Defender_Scan_Execution_Function {
                 # Check defender status
                 if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
-                    Write-Host "[+] Starting Windows Defender" -ForegroundColor Green
+                    Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
                     Start-Sleep -Seconds 3
-                    Write-Host "[+] Performing a Quick Scan" -ForegroundColor Green
+                    Write-Host "[*] Performing a Quick Scan"    -ForegroundColor Blue
                     Update-MpSignature
                     Start-MpScan -ScanType QuickScan
                     Remove-MpThreat
@@ -636,43 +644,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # PC can be checked if it is connected to a domain and all security scanning relating to domain can be then applied
 
         # ***************END OF -> Security Audit Sub-Section***************
-
-        # ***************Recommendations Sub-Section***************
-        
-        function Generate_Recommendations_Display_Function {
-            # check if the system is connected to an AD Domain, if true then prompt user to check all configurations and security policies
-            # if and only if the user is a part of the Administrators group or is a Domain Controller (DC)
-
-            if((Get-CimInstance Win32_ComputerSystem).PartOfDomain -eq "True") {
-                Write-Host "[+] System is joined to a domain" -ForegroundColor Blue
-                Write-Host "[+] Generating Recommendations" -ForegroundColor Green
-                Start-Sleep -Seconds 3
-                Write-Host "[1] Eliminate Admin-Like Permissions Where Possible"
-                Write-Host "[2] Eliminate Permanent Membership In Security Groups"
-                Write-Host "[3] Lock Down Service Accounts"
-                Write-Host "[4] Don’t Let Employees Have Admin Accounts On Their Workstationse"
-                Write-Host "[5] Create or update incident recovery plans"
-                Write-Host "[6] Implement business-centric lifecycle management for IT assets"
-                Write-Host "[7] Use host-based firewalls to control and secure communications"
-                Write-Host "[8] Simplify security for end users"
-                Write-Host "[9] Migrate critical assets to pristine forests with stringent security and monitoring requirements"
-                Write-Host "[10] Implement configuration management, review compliance regularly, and evaluate settings with each new hardware or software version"
-                Write-Host "[11] Implement secure development lifecycle programs for custom applications"
-                Write-Host "[12] Decommission legacy systems and applications"
-                Write-Host "[13] Isolate legacy systems and applications"
-                Write-Host "[14] Implement least-privilege, role-based access controls for administration of the directory, its supporting infrastructure, and domain-joined systems"
-                Write-Host "[15] Identify critical assets, and prioritize their security and monitoring"
-                Write-Host "[16] Use application allowslists on domain controllers, administrative hosts, and other sensitive systems"
-                Write-Host "[17] Implement secure administrative hosts"
-                Write-Host "[18] Implement controls to grant temporary membership in privileged groups when needed"
-                Write-Host "[19] Eliminate permanent membership in highly privileged groups"
-                Write-Host "[20] Monitor sensitive Active Directory objects for modification attempts and Windows for events that may indicate attempted compromise"
-                Write-Host "[21] Deploy and promptly update antivirus and antimalware software across all systems and monitor for attempts to remove or disable it"
-            }
-        }
-
-        # ***************END OF -> Recommendations Sub-Section***************
-
 
         # ********************END OF -> Post-Initialization Section********************
 
@@ -844,8 +815,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
 
         # ********************END OF -> Output Handling Section********************
-
-
 }
 
 } else {
