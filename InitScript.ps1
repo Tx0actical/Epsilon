@@ -1,22 +1,5 @@
         # ********************Zero Section********************
 
-Write-Host "[*] Importing Modules" -ForegroundColor Blue
-
-try {
-    Import-Module -Name Microsoft.PowerShell.Diagnostics
-    Import-Module -Name Microsoft.PowerShell.Utility
-    Import-Module -Name Microsoft.PowerShell.Management
-    Import-Module -Name Microsoft.PowerShell.Core
-} catch {
-    Write-Host "[-] Could not Import Necessary Modules" -ForegroundColor Red
-}
-
-# Firstly, script records itself into the event log, for determination of last runtime.
-
-New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
-Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
-Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
-
 # This section will first check the registry value that is set when the computer is restarted in the middle of script execution.
 # If the value is set, then the script will continue from where it left off (addtional logic will be required to do that).
 # If the value is not set, then the script will start from the beginning.
@@ -24,8 +7,23 @@ Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 # &&&&&&&&&& OR &&&&&&&&&&
 
 # The restart can be handled in the end after the output dispatch center gives a green light after the result of all the functions are determined. In the meantime, restarts can be kept pending.
-# That would save a lot of extra code. But if certain operation requires immediate restart to complete, then this section might have a relevance, till then this is commented.
 
+Write-Host "[+] Importing Modules" -ForegroundColor Blue
+
+try {
+    Import-Module -Name Microsoft.PowerShell.Diagnostics
+    Import-Module -Name Microsoft.PowerShell.Utility
+    Import-Module -Name Microsoft.PowerShell.Management
+    Import-Module -Name Microsoft.PowerShell.Core
+} catch {
+    Write-Host "[-] Could Not Import Necessary Modules" -ForegroundColor Red
+}
+
+# Script records itself into the event log, for determination of last runtime.
+
+New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
+Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
+Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
 
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
@@ -36,10 +34,7 @@ function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
     $Global:RegistryValue   = "Start-Process -FilePath 'C:\Program Files\PowerShell\7\pwsh.exe' -Verb RunAs -ArgumentList $PSCommandPath"
     New-Item            -Path $Global:RegistryPath -Name $Global:RegistryName
     New-ItemProperty    -Path $Global:RegistryPath -Name $Global:RegistryName -Value $Global:RegistryValue -PropertyType "String"
-
-    # There might be no need to remove registry key after the script is run, because, Windows always removes RunOnce key after use.
 }
-
         # ********************END OF -> Zero Section********************
         
         # ********************Pre-Initialization Section********************
@@ -55,12 +50,7 @@ $Global:MinimumRequiredPowershellVersion = [PSCustomObject]@{
 $Global:CurrentDate = Get-Date -DisplayHint Date -Format "MM/dd/yyyy"
 $Global:RegistryPath
 $Global:RegistryName
-$Global:RegistryValue
-
-        # ********************END OF -> Pre-Initialization Section********************
-
-
-        # ********************Initialization Section********************
+$Global:RegistryValue  
 
 $Global:CurrentDate                                         = $null
 $Global:LastDiskOptimizeDate                                = $null
@@ -256,12 +246,9 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
             Write-Host "[*] Checking last boot cause"
             Start-Sleep -Seconds 1
             Write-Host "[+] RunOnce key successfully set before last restart"
-            
-            # because last restart was caused by the script, some additional logic is required to continue where the control left off, hence call 
-            Write-Host "[*] Injecting previous variable state in current instance" -ForegroundColor Blue
+            Write-Host "[*] Injecting previous instance state in current instance" -ForegroundColor Blue
             Reload_Previous_Script_Instance_State_Handle_Function
         }
-        
     } else {
         Write-Host "[+] Last restart was not caused by the script"
     }
@@ -269,40 +256,13 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
 
 #Requires -Version 7.2.0
 
+        # ********************END OF -> Pre-Initialization Section********************
+
+        # ********************Initialization Section********************
+
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
-    Write-Host "[*] Intializing System-Wide Optimization (SWO) Script." -ForegroundColor White -BackgroundColor Blue
-    Write-Host "[*] Do not interrupt the process once it has started. Irreversible Data Loss and Disk Corruption may occur." -ForegroundColor White -BackgroundColor Blue
-
-    # Import user module
-    Import-Module -Name Microsoft.PowerShell.LocalAccounts
-    # Import current user profile
-    $CurrentUser = whoami.exe
-    # Get members of administrators group
-    $IsAdmin = Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name
-
-    # Check if user is Admin and act accordingly
-    if ($IsAdmin -Contains $CurrentUser) {
-        # Spawn PowerShell with $CurrentUser privileges
-        Start-Process -FilePath "powershell" -Verb RunAs
-        # Modify ExecutionPolicy to run scripts
-        try {
-            $ExecutionPolicy = Get-ExecutionPolicy
-            if ($ExecutionPolicy -ne 'Bypass') {
-                Set-ExecutionPolicy Bypass -Force
-            }
-        } catch {
-            Write-Host "[-] Unable to get required Execution Policy permissions" -ForegroundColor Red    
-        }
-    }
-    else {
-        Write-Host "[-] Unable to get required permissions"  # can write Write-Error or something like that
-    }
-    
-    # if the user runs the code as administrator then the above code will not be required. But a self elevating script can be used.
-    # That way, the user can elevate itself to admin, utilizing a credential prompt (Get-Credential), if not, if the user is admin then, the script will execute all the code below.
-    
-    # If the required version of powershell is not present in the host system, then the user can be prompted to install it. A choice can be given to the user.
-    # If the user chooses to install it, then the script will install it otherwise, the script can return the incompatibility message and exit.
+    Write-Host "[*] Intializing Epsilon Script" -ForegroundColor Green
+    Write-Host "[Info.] Do not interrupt execution. Keep the system plugged in." -ForegroundColor Yellow
 
 
         # ********************END OF -> Initialization Section********************
