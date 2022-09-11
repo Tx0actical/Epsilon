@@ -6,13 +6,13 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![PowerShell](https://img.shields.io/badge/powershell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
 
-> :warning: **The project is in a Concept/Initial Development stage, also indicated by badges above. Please consider side-effects before running the script and do so at your own volition. Do not run this except for testing environments** :warning:
+:warning: **The project is in a Concept/Initial Development stage, also indicated by badges above. Please consider side-effects before running the script and do so at your own volition. Do not run this except for testing environments** :warning:
 
 # Stochastic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
 ## Overview
 
-In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters, to get the desired results. This might not be the most user friendly.
+In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters to get the desired results. This might not be the most user friendly.
 
 This is where Stochastic Optimization (SO) comes in. In classical sense, SO means that a Neural Network is non-deterministic in nature, outcomes cannot be determined and results vary each time a stochastic algorithm is run. In the context of this project (matching the classical idea), SO is used to describe the process of determination of causes of performance issues in Windows OS by employing a Machine Learning (ML) Model looking at logs and related system behaviour, then determining the cause of the issue, and try to fix that as a last step.
 
