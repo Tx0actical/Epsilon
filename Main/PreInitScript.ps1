@@ -1,15 +1,13 @@
-# Parameter help description
-Write-Host "[+] Provide the path to InitScript.ps1" -ForegroundColor Blue
+param([string] $PreInitScriptPath) 
 
-param([string] $PreInitScriptPath = "${$PSScriptRoot}\InitScript.ps1") 
+$PreInitScriptPath = "${$PSScriptRoot}InitScript.ps1"
 
 Write-Host "[*] Intializing PreInitScript" -ForegroundColor Green
+Start-Sleep -Seconds 1
 Write-Host "[*] Importing Modules" -ForegroundColor Yellow
 
 # Import user module
 Import-Module -Name Microsoft.PowerShell.LocalAccounts
-
-Import-Module -Name Microsoft.PowerShell.Core
 
 # Import current user profile
 $CurrentUser = whoami.exe
@@ -18,41 +16,31 @@ $CurrentUser = whoami.exe
 $IsAdmin = Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name
 
 function Start_InitScript_Execution_Function {
-
-    [CmdletBinding()]
-    param (
-        
+    [CmdletBinding()] param (
+        [string] $PreInitScriptPath
     )
+
     # Check if user is Admin and act accordingly
     if ($IsAdmin -Contains $CurrentUser) {
-
-
-        # Spawn PowerShell with admin privileges
-        Start-Process -FilePath "powershell.exe -file ${PreInitScriptPath}" -Verb RunAs -RedirectStandardError ./debugfile.txt -WindowStyle Maximized
-
-        
-        # Modify ExecutionPolicy to run scripts
         try {
-            $ExecutionPolicy = Get-ExecutionPolicy
-            if ($ExecutionPolicy -ne 'Bypass') {
-                Set-ExecutionPolicy Bypass -Force
-            }
+            Start-Process -FilePath "pwsh.exe ${PreInitScriptPath}" -ArgumentList "-ExecutionPolicy Bypass -NoExit -RedirectStandardError ./debugfile.txt -WindowStyle Maximized" -Verb RunAs
         } catch {
-            Write-Host "[-] Unable to get required Execution Policy permissions" -ForegroundColor Red    
-        } finally {
-            Write-Host "Have a nice day :)" -BackgroundColor Green
+            Write-Host "[-] Unable start Main script" -ForegroundColor Red
         }
-    }
-    else {
+
+    } else {
+
         Write-Host "[-] Current user not admin" -ForegroundColor Red
+        Start-Sleep -Seconds 2
         Write-Host "[*] Please provide admin credentials" -ForegroundColor Blue
+        Start-Sleep -Seconds 2
+
         try {
-            Start-Process -FilePath "powershell.exe -file InitScript.ps1 - " (Get-Credential) -RedirectStandardError ./debugfile.txt -WindowStyle Maximized
+            Start-Process -FilePath "pwsh.exe ${PreInitScriptPath}" -ArgumentList " (Get-Credential) -ExecutionPolicy Bypass -NoExit -RedirectStandardError ./debugfile.txt -WindowStyle Maximized" -Verb RunAs
         } catch {
             Write-Host "[-] Credentials Insufficient or Incorrect. Please try again later" -ForegroundColor Red
+            Start-Sleep -Seconds 2
             Exit-PSSession
-        } finally {
-            Write-Host "Have a nice day :)" -BackgroundColor Green
         }
     }   
 }

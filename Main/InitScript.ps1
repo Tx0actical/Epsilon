@@ -14,7 +14,7 @@ try {
     Import-Module -Name Microsoft.PowerShell.Diagnostics
     Import-Module -Name Microsoft.PowerShell.Utility
     Import-Module -Name Microsoft.PowerShell.Management
-    Import-Module -Name Microsoft.PowerShell.Core
+    
 } catch {
     Write-Host "[-] Could Not Import Necessary Modules" -ForegroundColor Red
 }
@@ -824,3 +824,5 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     Write-Host "[!] The script can't run on Windows Server 2012, Windows Server 2008 R2 and Windows 8.1" -ForegroundColor White -BackgroundColor Red
     Write-Host "[*] Exiting..." -ForegroundColor White -BackgroundColor Blue
 }
+
+Pause
