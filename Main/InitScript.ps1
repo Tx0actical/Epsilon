@@ -22,10 +22,23 @@ try {
 }
 
 # Script records itself into the event log, for determination of last runtime.
-
-New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
-Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
-Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
+try {
+    New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
+} catch {
+    Write-Host "[-] Unable to create Script Event in logs" -ForegroundColor Red
+}
+try {
+    Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
+}
+catch {
+    Write-Host "[-] Unable to write to created entry" -ForegroundColor Red
+}
+try {
+    Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
+}
+catch {
+    Write-Host "[-] Unable to read from created entry" -ForegroundColor Red
+}
 
 # Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
