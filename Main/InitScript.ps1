@@ -258,35 +258,33 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************System Files Audit Sub-Section***************
 
         if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
-            $Global:JOB_CHKDSK = Start-Job -ScriptBlock {
-                function Run_CHKDSK_Utility_Execution_Function {
-                    Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
+            function Run_CHKDSK_Utility_Execution_Function {
+                Write-Host "[+] Runnig CHKDSK" -ForegroundColor Green
 
-                    # Determine volumes present in the system, and run chkdsk on all those volumes
-                    $Volume = Get-Volume
-                    $Global:VolumeNumber = $Volume.Count
-                    $i = 0
-                    foreach ($Letter in $Volume.DriveLetter) {
-                        if($i -eq $Global:VolumeNumber) {
-                            break
-                        } else {
-                            # run chkdsk on all volumes
-                            Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
-                            chkdsk "$($Volume.DriveLetter[$i]):" /r
-                            if($LASTEXITCODE -eq 0) {
-                                Write-Host "[*] No errors were found."
-                            } elseif ($LASTEXITCODE -eq 1) {
-                                Write-Host "[*] Errors were found and fixed."
-                            } elseif ($LASTEXITCODE -eq 2) {
-                                Write-Host "[*] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
-                            } elseif ($LASTEXITCODE -eq 3) {
-                                Write-Host "[*] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
-                            }
-                            $i++
+                # Determine volumes present in the system, and run chkdsk on all those volumes
+                $Volume = Get-Volume
+                $Global:VolumeNumber = $Volume.Count
+                $i = 0
+                foreach ($Letter in $Volume.DriveLetter) {
+                    if($i -eq $Global:VolumeNumber) {
+                        break
+                    } else {
+                        # run chkdsk on all volumes
+                        Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])"
+                        chkdsk "$($Volume.DriveLetter[$i]):" /r
+                        if($LASTEXITCODE -eq 0) {
+                            Write-Host "[*] No errors were found."
+                        } elseif ($LASTEXITCODE -eq 1) {
+                            Write-Host "[*] Errors were found and fixed."
+                        } elseif ($LASTEXITCODE -eq 2) {
+                            Write-Host "[*] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified."
+                        } elseif ($LASTEXITCODE -eq 3) {
+                            Write-Host "[*] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified."
                         }
+                        $i++
                     }
-                    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
                 }
+                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
             }
         }
         
