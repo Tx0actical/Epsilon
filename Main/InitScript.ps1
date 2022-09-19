@@ -14,6 +14,8 @@ try {
     Import-Module -Name Microsoft.PowerShell.Diagnostics
     Import-Module -Name Microsoft.PowerShell.Utility
     Import-Module -Name Microsoft.PowerShell.Management
+
+    Import-Module .\LargeFunc.psm1
     
 } catch {
     Write-Host "[-] Could Not Import Necessary Modules" -ForegroundColor Red
@@ -39,6 +41,7 @@ function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
         
         # ********************Pre-Initialization Section********************
 
+        
 # Get OS version
 $Global:HostOSVersion = Get-ComputerInfo | Select-Object WindowsProductName
 $Global:HostPowershellVersion = $PSVersionTable.PSVersion 
@@ -103,130 +106,7 @@ $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 # Search for the PreviousStateFile in the current directory, that should be by the name of Resume.json
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
 
-# Function to save and reload script state from a statefile
-function Record_Previous_Script_Instance_State_Handle_Function {
-    
-    # function to record current state including variables and other state information used when resuming the script after restart.
-    # create a statefile
 
-    $Global:ScriptVariableState = @{
-        'CurrentDate'                                       = $Global:CurrentDate                                       ;
-        'HostOSVersion'                                     = $Global:HostOSVersion                                     ;
-        'HostPowershellVersion'                             = $Global:HostPowershellVersion                             ;
-        'IncompatibleOSVersion'                             = $Global:IncompatibleOSVersion                             ;
-        'MinimumRequiredPowershellVersion'                  = $Global:MinimumRequiredPowershellVersion                  ;
-        'RegistryPath'                                      = $Global:RegistryPath                                      ;
-        'RegistryName'                                      = $Global:RegistryName                                      ;
-        'RegistryValue'                                     = $Global:RegistryValue                                     ;                                         
-        'LastDiskOptimizeDate'                              = $Global:LastDiskOptimizeDate                              ;                              
-        'DaysSinceDiskLastOptimized'                        = $Global:DaysSinceDiskLastOptimized                        ;
-        'VolumeNumber'                                      = $Global:VolumeNumber                                      ;  
-        'LastSytemRebootDate'                               = $Global:LastSytemRebootDate                               ; 
-        'RestartStatusVariable'                             = $Global:RestartStatusVariable                             ;  
-
-        'INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'      = $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS      ;  
-        'OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS'     = $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS     ;  
-
-        'SFA_CHKDSK_EXECUTION_FUNCTION_STATUS'              = $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS              ; 
-        'SFA_SFC_EXECUTION_FUNCTION_STATUS'                 = $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                 ;  
-        'SFA_DISM_EXECUTION_FUNCTION_STATUS'                = $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                ;  
-        'UA_SYS_UPDATE_FUNCTION_STATUS'                     = $Global:UA_SYS_UPDATE_FUNCTION_STATUS                     ;  
-        'UA_STORE_UPDATE_FUNCTION_STATUS'                   = $Global:UA_STORE_UPDATE_FUNCTION_STATUS                   ;  
-        'UA_DRIVER_UPDATE_FUNCTION_STATUS'                  = $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                  ;  
-        'NOP_DNS_UPDATE_FUNCTION_STATUS'                    = $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                    ;  
-        'NOP_IRPSS_UPDATE_FUNCTION_STATUS'                  = $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                  ;  
-        'NOP_BAPP_CONFIGURE_FUNCTION_STATUS'                = $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                ; 
-        'NOP_LSO_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                   ;  
-        'NOP_ATUN_DISABLE_FUNCTION_STATUS'                  = $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                  ;  
-        'NOP_QOS_DISABLE_FUNCTION_STATUS'                   = $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                   ;  
-            
-        'MRO_DFRG_EXECUTION_FUNCTION_STATUS'                = $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                ;  
-        'MRO_TEMP_UPDATE_FUNCTION_STATUS'                   = $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                   ;  
-        'MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS'             = $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS             ;  
-        'SA_DFNDR_DISABLE_EXECUTION_STATUS'                 = $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                 ;  
-        'SA_PR_HANDLE_FUNCTION_STATUS'                      = $Global:SA_PR_HANDLE_FUNCTION_STATUS                      ;  
-
-        'SET_SFA_CHKDSK_NODE_RESULT_DETERMINED'             = $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED             ;  
-        'SET_SFA_SFC_NODE_RESULT_DETERMINED'                = $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                ; 
-        'SET_SFA_DISM_NODE_RESULT_DETERMINED'               = $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED               ;  
-        'SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED'          = $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED          ;  
-        'SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED        ;  
-        'SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED       ;  
-        'SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED'         = $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED         ;  
-        'SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED       ;  
-        'SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED'     = $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED     ; 
-        'SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED        ; 
-        'SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED       ;  
-        'SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED        ;  
-        'SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED'        = $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED        ;  
-        'SET_MRO_DFRG_NODE_RESULT_DETERMINED'               = $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED               ;  
-        'SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED'        = $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED        ;  
-        'SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED'  = $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED  ;  
-        'SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED'       = $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED       ;  
-        'SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED'           = $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED           ;  
-    };
-    $Global:ScriptVariableState | ConvertTo-Json | Set-Content -Path ResumeScript.json
-}
-
-function Reload_Previous_Script_Instance_State_Handle_Function {
-    [CmdletBinding()] param (
-        [Parameter()] [String] $Global:PreviousStateFile
-    )
-    Write-Host "[*] Importing previous instance variable state"
-    Start-Sleep -Seconds 3
-
-    # Restore script state by loading variable state information from the statefile
-    $Global:State = Get-Content -Path $Global:ScriptVariableState | ConvertFrom-Json
-
-    $Global:CurrentDate                                         = $Global:State.CurrentDate
-    $Global:LastDiskOptimizeDate                                = $Global:State.LastDiskOptimizeDate
-    $Global:DaysSinceDiskLastOptimized                          = $Global:State.DaysSinceDiskLastOptimized
-    $Global:VolumeNumber                                        = $Global:State.VolumeNumber
-    $Global:LastSytemRebootDate                                 = $Global:State.LastSytemRebootDate
-    $Global:RestartStatusVariable                               = $Global:State.RestartStatusVariable
-
-    $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $Global:State.INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
-    $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $Global:State.OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
-
-    $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $Global:State.SFA_CHKDSK_EXECUTION_FUNCTION_STATUS
-    $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $Global:State.SFA_SFC_EXECUTION_FUNCTION_STATUS
-    $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $Global:State.SFA_DISM_EXECUTION_FUNCTION_STATUS
-    $Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $Global:State.UA_SYS_UPDATE_FUNCTION_STATUS
-    $Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $Global:State.UA_STORE_UPDATE_FUNCTION_STATUS
-    $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $Global:State.UA_DRIVER_UPDATE_FUNCTION_STATUS
-    $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $Global:State.NOP_DNS_UPDATE_FUNCTION_STATUS
-    $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $Global:State.NOP_IRPSS_UPDATE_FUNCTION_STATUS
-    $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $Global:State.NOP_BAPP_CONFIGURE_FUNCTION_STATUS
-    $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $Global:State.NOP_LSO_DISABLE_FUNCTION_STATUS
-    $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $Global:State.NOP_ATUN_DISABLE_FUNCTION_STATUS
-    $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $Global:State.NOP_QOS_DISABLE_FUNCTION_STATUS
-
-    $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $Global:State.MRO_DFRG_EXECUTION_FUNCTION_STATUS
-    $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $Global:State.MRO_TEMP_UPDATE_FUNCTION_STATUS
-    $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $Global:State.MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS
-    $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $Global:State.SA_DFNDR_DISABLE_EXECUTION_STATUS
-    $Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $Global:State.SA_PR_HANDLE_FUNCTION_STATUS
-
-    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $Global:State.SET_SFA_CHKDSK_NODE_RESULT_DETERMINED
-    $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $Global:State.SET_SFA_SFC_NODE_RESULT_DETERMINED
-    $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $Global:State.SET_SFA_DISM_NODE_RESULT_DETERMINED
-    $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $Global:State.SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $Global:State.SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $Global:State.SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $Global:State.SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $Global:State.SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $Global:State.SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $Global:State.SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED
-    $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $Global:State.SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED
-    $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $Global:State.SET_MRO_DFRG_NODE_RESULT_DETERMINED
-    $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $Global:State.SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $Global:State.SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED
-    $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $Global:State.SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED
-    $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $Global:State.SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED
-    
-}
 
 function Resume_Script_Execution_With_Previous_State_Handle_Function {
 
@@ -690,28 +570,41 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
     }
 
+    Invoke_Perceptron_For_Stop_Error_Parameters_Activation_Determination_Function
+
     function Invoke_Perceptron_For_Memory_Opmitization_Parameters_Activation_Determination_Function {
         # This function determines activations of specific functions that might help troubleshoot and optimize memory.
 
         # Can close unused appications that are left open for a long time, unused. Or this section can be binned if no controls were found to achieve the desired results.
         Write-Host "[*] Checking if memory optimization is needed" -ForegroundColor White -BackgroundColor Blue
 
+        __Input_Dispatch_Center_Control_Function__
+
         # Can check for memory failues, by using Windows Memory Diagnostics.
         Write-Host "[*] Checking if memory failures if a problem vector" -ForegroundColor White -BackgroundColor Blue
     }
+
+    Invoke_Perceptron_For_Memory_Opmitization_Parameters_Activation_Determination_Function
 
     function Invoke_Perceptron_For_Security_Audit_Parameters_Activation_Determination_Function {
         <#  This function will check if relevant security controls are present like Windows Defender logs, or logs generated by third-party AV software, wether or not scanning is done.
             This might include system updates and other parameters related to security. And the most relevant functions that can solve the problem will be assigned higher weights. #>
         
         Write-Host "[*] Checking if system wide security controls are present" -ForegroundColor White -BackgroundColor Blue
+        __Input_Dispatch_Center_Control_Function__
 
     }
+
+    Invoke_Perceptron_For_Security_Audit_Parameters_Activation_Determination_Function
 
     function Invoke_Perceptron_For_Network_Opmitization_Parameters_Activation_Determination_Function {
         <#  This function will evaluate the network connection and performance, and try to optimize them.
             Input parameters can be connection speed, or simply the presence of parameters that #>
+
+            __Input_Dispatch_Center_Control_Function__
     }
+
+    Invoke_Perceptron_For_Network_Opmitization_Parameters_Activation_Determination_Function
 
         # **************Function Call Sub-Section***************
     
@@ -743,6 +636,8 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         __Input_Dispatch_Center_Control_Function__
     }
 
+    Forward_Memory_Fixing_Parameters_Fowarding_Function
+
         # ***************END OF -> PAD Sub-Section-2***************
 
 
@@ -759,9 +654,13 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system. #>
 
         if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
+
             if($Global:SET_UA_SYS_NODE_RESULT_DETERMINED -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED) {
+
                 if($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED) {
+
                     if($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED) {
+                        
                         if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
 
                             # if all the above are true then the system will be ready for final restart and $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS will be set to true
@@ -825,4 +724,3 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     Write-Host "[*] Exiting..." -ForegroundColor White -BackgroundColor Blue
 }
 
-Pause
