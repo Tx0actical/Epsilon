@@ -1,10 +1,10 @@
-Using Module ".\Neural_Engine.psm1"
+Using Module ".\NeuralEngine.psm1"
 # Import-Module C:\Users\abc\source\repos\Project_Automation\Engine.psm1
 
 # Creating 2D array to create a layered network
 
 class Network {
-    [Neural_Engine[] []] hidden $Network
+    [NeuralEngine[] []] hidden $Network
 
     Network(
         [int[]] $NetworkLayout,
@@ -15,9 +15,9 @@ class Network {
             $Layer = @()
             for ($n = 0; $n -lt $NetworkLayout[$i]; $n++) {
                 if ($i -eq 0) {
-                    $Layer += [Neural_Engine]::new($null, $NetworkLayout[$i], $LearningRate)
+                    $Layer += [NeuralEngine]::new($null, $NetworkLayout[$i], $LearningRate)
                 } else {
-                    $Layer += [Neural_Engine]::new($this.Network[$i-1], $NetworkLayout[$i-1], $LearningRate)
+                    $Layer += [NeuralEngine]::new($this.Network[$i-1], $NetworkLayout[$i-1], $LearningRate)
                 }
             }
             $this.Network += , $Layer
