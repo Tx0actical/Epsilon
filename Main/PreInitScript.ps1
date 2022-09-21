@@ -2,9 +2,10 @@ param([string] $PreInitScriptPath)
 
 $PreInitScriptPath = "${$PSScriptRoot}InitScript.ps1"
 
-Write-Host "[*] Intializing PreInitScript" -ForegroundColor Green
-Start-Sleep -Seconds 1
-Write-Host "[*] Importing Modules" -ForegroundColor Yellow
+Write-Host "[+] Intializing Initialization Script for Epsilon" -ForegroundColor Green
+Start-Sleep -Seconds 3
+Write-Host "[+] Importing Modules" -ForegroundColor Yellow
+Start-Sleep -Seconds 3
 
 # Import user module
 Import-Module -Name Microsoft.PowerShell.LocalAccounts
@@ -32,7 +33,7 @@ function Start_InitScript_Execution_Function {
 
         Write-Host "[-] Current user not admin" -ForegroundColor Red
         Start-Sleep -Seconds 2
-        Write-Host "[*] Please provide admin credentials" -ForegroundColor Blue
+        Write-Host "[+] Provide admin credentials" -ForegroundColor Blue
         Start-Sleep -Seconds 2
 
         try {
