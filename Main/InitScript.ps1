@@ -159,9 +159,9 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
 
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
 
-    Write-Host "[*] Intializing Epsilon" -BackgroundColor Green -ForegroundColor Black
+    Write-Host "[*] Intializing Epsilon" -ForegroundColor Green
     Start-Sleep -Seconds 3
-    Write-Host "[*] Do not interrupt execution. Keep the system plugged in. Follow Prompts as they appear." -BackgroundColor Blue -ForegroundColor White
+    Write-Host "[*] Do not interrupt execution. Keep the system plugged in. Follow Prompts as they appear." -ForegroundColor Yellow
     Start-Sleep -Seconds 3
 
 
