@@ -67,7 +67,7 @@ function Reload_Previous_Script_Instance_State_Handle_Function {
     [CmdletBinding()] param (
         [Parameter()] [String] $Global:PreviousStateFile
     )
-    Write-Host "[*] Importing previous instance variable state"
+    Write-Host "[+] Importing previous instance variable state" -BackgroundColor Yellow
     Start-Sleep -Seconds 3
 
     # Restore script state by loading variable state information from the statefile
