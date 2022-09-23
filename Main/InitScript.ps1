@@ -77,46 +77,46 @@ $Global:VolumeNumber                                        = $null
 $Global:LastSytemRebootDate                                 = $null
 $Global:RestartStatusVariable                               = $null
 
-$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
-$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
-$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
-$Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
-$Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
-$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
-$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
-$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
-$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
-$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
-$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
-$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
+# $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
+# $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
+# $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
+# $Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
+# $Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
+# $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
+# $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
+# $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
+# $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
+# $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
+# $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
+# $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
 
-$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
-$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
-$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
-$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
-$Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
+# $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
+# $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
+# $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
+# $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
+# $Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
 
-$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
-$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
-$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
-$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
-$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
-$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
-$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
-$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
-$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
+# $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
+# $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
+# $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
+# $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
+# $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
+# $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
+# $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
+# $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
+# $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
+# $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
+# $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
+# $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
+# $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
+# $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
+# $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
+# $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
+# $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
+# $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 
-$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
-$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
+# $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
+# $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
 
 # Search for the PreviousStateFile in the current directory, that should be by the name of Resume.json
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
@@ -182,7 +182,11 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
     function __Input_Dispatch_Center_Control_Function__ {
         [CmdletBinding()] param(
+
+
             [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   ,
+
+
             [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS           ,
             [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS              ,
             [Parameter(Position = 3,  Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS             ,
@@ -208,7 +212,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor Blue
 
-        if($Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS) {
+        if($Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True) {
 
             Write-Host "[+] Sub-Section initialization completed" -ForegroundColor Green
 
@@ -270,37 +274,38 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             # ***************System Files Audit Sub-Section***************
 
-            function Run_CHKDSK_Utility_Execution_Function {
-                Write-Host "[*] Running CHKDSK" -ForegroundColor Yellow
+            
 
-                # Determine volumes present in the system, and run chkdsk on all those volumes
-                $Volume = Get-Volume
-                $Global:VolumeNumber = $Volume.Count
-                $i = 0
-                foreach ($Letter in $Volume.DriveLetter) {
-                    if($i -eq $Global:VolumeNumber) {
-                        break
-                    } else {
-                        # run chkdsk on all volumes
-                        Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
-                        chkdsk "$($Volume.DriveLetter[$i]):" /r
-                        if($LASTEXITCODE -eq 0) {
-                            Write-Host "[+] No errors were found." -ForegroundColor Green
-                        } elseif ($LASTEXITCODE -eq 1) {
-                            Write-Host "[+] Errors were found and fixed." -ForegroundColor Green
-                        } elseif ($LASTEXITCODE -eq 2) {
-                            Write-Host "[+] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified." -ForegroundColor Green
-                        } elseif ($LASTEXITCODE -eq 3) {
-                            Write-Host "[-] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified." -ForegroundColor Red
+            if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
+                function Run_CHKDSK_Utility_Execution_Function {
+                    Write-Host "[*] Running CHKDSK" -ForegroundColor Yellow
+    
+                    # Determine volumes present in the system, and run chkdsk on all those volumes
+                    $Volume = Get-Volume
+                    $Global:VolumeNumber = $Volume.Count
+                    $i = 0
+                    foreach ($Letter in $Volume.DriveLetter) {
+                        if($i -eq $Global:VolumeNumber) {
+                            break
+                        } else {
+                            # run chkdsk on all volumes
+                            Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
+                            chkdsk "$($Volume.DriveLetter[$i]):" /r
+                            if($LASTEXITCODE -eq 0) {
+                                Write-Host "[+] No errors were found." -ForegroundColor Green
+                            } elseif ($LASTEXITCODE -eq 1) {
+                                Write-Host "[+] Errors were found and fixed." -ForegroundColor Green
+                            } elseif ($LASTEXITCODE -eq 2) {
+                                Write-Host "[+] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified." -ForegroundColor Green
+                            } elseif ($LASTEXITCODE -eq 3) {
+                                Write-Host "[-] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified." -ForegroundColor Red
+                            }
+                            $i++
                         }
-                        $i++
                     }
+    
+                    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
                 }
-
-                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
-            }
-
-            if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS) {
                 
                 # Function call
                 Run_CHKDSK_Utility_Execution_Function
@@ -681,8 +686,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         __Input_Dispatch_Center_Control_Function__
     }
-
-    
 
     function Forward_Security_Optimization_Parameters_Forwarding_Function {
 
