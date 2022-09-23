@@ -727,7 +727,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             The weights will be the impact of a function in resolving the problem. Higher impact functions will have more weight.
             Bad driver configuration, Software updates, Hardware failures, Memory failures, Power failures, Disk Errors might be the cause #>
 
-        Write-Host "[*] Checking if StopError is a potential problem vector" -ForegroundColor Yellow
+        Write-Host "[*] Checking if Stop Errors is a potential problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
         Write-Host "[+] Injecting Log Data in Model" -ForegroundColor Cyan
