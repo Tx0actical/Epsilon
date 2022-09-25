@@ -277,13 +277,15 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             
 
             if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
-                function Run_CHKDSK_Utility_Execution_Function {
+                function Run_Chkdsk_Utility_Execution_Function {
+
                     Write-Host "[*] Running CHKDSK" -ForegroundColor Yellow
     
                     # Determine volumes present in the system, and run chkdsk on all those volumes
                     $Volume = Get-Volume
                     $Global:VolumeNumber = $Volume.Count
                     $i = 0
+
                     foreach ($Letter in $Volume.DriveLetter) {
                         if($i -eq $Global:VolumeNumber) {
                             break
@@ -292,12 +294,16 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                             Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
                             chkdsk "$($Volume.DriveLetter[$i]):" /r
                             if($LASTEXITCODE -eq 0) {
+
                                 Write-Host "[+] No errors were found." -ForegroundColor Green
                             } elseif ($LASTEXITCODE -eq 1) {
+
                                 Write-Host "[+] Errors were found and fixed." -ForegroundColor Green
                             } elseif ($LASTEXITCODE -eq 2) {
+
                                 Write-Host "[+] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified." -ForegroundColor Green
                             } elseif ($LASTEXITCODE -eq 3) {
+
                                 Write-Host "[-] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified." -ForegroundColor Red
                             }
                             $i++
@@ -308,17 +314,17 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 }
                 
                 # Function call
-                Run_CHKDSK_Utility_Execution_Function
+                Run_Chkdsk_Utility_Execution_Function
             }
             
             if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
-                function Run_SFC_Utility_Execution_Function {
+                function Run_Sfc_Utility_Execution_Function {
+
                     Write-Host "[*] Running SFC" -ForegroundColor Yellow
                     # run sfc
                     sfc /scannow
                     
                     # rough code start
-
                     if($LASTEXITCODE -eq 0) {
                         $ComputerName = Get-ComputerInfo | Select-Object CsCaption
                         $ComputerName = $ComputerName.CsCaption
@@ -330,18 +336,18 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     }   
                 }
                 # Function call
-                Run_SFC_Utility_Execution_Function
+                Run_Sfc_Utility_Execution_Function
             }
 
             if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
-                function Run_DISM_Utility_Execution_Function {
-                    Write-Host "[*] Running DISM" -ForegroundColor Yellow
+                function Run_Dism_Utility_Execution_Function {
 
+                    Write-Host "[*] Running DISM" -ForegroundColor Yellow
                     $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
                 }
 
                 # Function call
-                Run_DISM_Utility_Execution_Function
+                Run_Dism_Utility_Execution_Function
             }
 
             # ***************END OF -> System Files Audit Sub-Section***************
@@ -350,6 +356,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:UA_SYS_UPDATE_FUNCTION_STATUS) {
                 function Update_Windows_System_Handle_Function {
+
                     Write-Host "[+] Updating Windows" -ForegroundColor Blue
                     # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
                     Install-Module PSWindowsUpdate
@@ -373,6 +380,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             
             if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
                 function Update_Microsoft_Store_Application_Handle_Function {
+
                     Write-Host "[*] Updating Microsoft Store Applications" -ForegroundColor Blue
                     # update using winget
                     Write-Host "[*] Checking Microsoft Store Application updates" -ForegroundColor Yellow
@@ -392,6 +400,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             
             if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
                 function Update_Windows_System_Drivers_Handle_Function {
+
                     Write-Host "[*] Checking Windows System Drivers Updates" -ForegroundColor Yellow
                     # If the PowerShell Modules Folder is non-existing, it will be created.
                     if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
@@ -448,7 +457,8 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************Network Optimization Sub-Section***************
 
             if($Global:NOP_DNS_UPDATE_FUNCTION_STATUS) {
-                function Change_DNS_Server_Update_Function {
+                function Change_Dns_Server_Update_Function {
+
                     Write-Host "[+] Changing DNS to Google's public DNS" -ForegroundColor Blue
                     # First, determine the active interface that is connected to internet
                     Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
@@ -463,11 +473,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 }
 
                 # Function call
-                Change_DNS_Server_Update_Function
+                Change_Dns_Server_Update_Function
             }
 
             if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
-                function Change_IRP_Stack_Size_Update_Function {
+                function Change_Irp_Stack_Size_Update_Function {
+
                     Write-Host "[+] Increasing IRPStackSize value from default to 32" -ForegroundColor Blue
                     New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize"
                     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Value 0x00000020
@@ -475,11 +486,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 }
 
                 # Function call
-                Change_IRP_Stack_Size_Update_Function
+                Change_Irp_Stack_Size_Update_Function
             }
 
             if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
                 function Configure_Background_Applications_Settings_Handle_Function {
+
                     Write-Host "[+] Disabling background apps" -ForegroundColor Blue
                     Reg Add HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications /v GlobalUserDisabled /t REG_DWORD /d 1 /f
                     $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
@@ -491,6 +503,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
                 function Disable_Large_Send_Offload_Handle_Function {
+
                     Write-Host "[+] Disabling Large Send Offload" -ForegroundColor Blue
                     $Global:Adapter = Get-NetAdapter -physical | Where-Object status -eq 'up'
                     foreach ($Object in $Global:Adapter) {
@@ -505,6 +518,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
                 function Disable_Windows_Auto_Tuning_Handle_Function {
+
                     Write-Host "[+] Disabling Windows Auto Tuning" -ForegroundColor Blue
                     netsh int tcp set global autotuninglevel=disabled
                     netsh int tcp set global autotuninglevel=normal
@@ -517,6 +531,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
                 function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
+
                     Write-Host "[+] Disabling QoS Packet Scheduler" -ForegroundColor Blue
                     foreach ($Object in $Global:Adapter) {
                         Disable-NetAdapterQos -Name $Object
@@ -534,6 +549,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
                 function Run_Disk_Defragmentor_Execution_Function {
+
                     Write-Host "[*] Runnig Disk Defragmentor" -ForegroundColor Yellow
                     # Determine volumes present in the system, and run chkdsk on all those volumes
                     $Volume = Get-Volume
@@ -549,14 +565,15 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             }
 
             if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
-                function Remove_TEMP_Files_Update_Function {
+                function Remove_Temp_Files_Update_Function {
+
                     Write-Host "[+] Purging Windows TEMP files" -ForegroundColor Blue
                     Get-ChildItem -Path "C:\Windows\Temp" *.* -Recurse | Remove-Item -Force -Recurse
                     $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
                 }
 
                 # Function call
-                Remove_TEMP_Files_Update_Function
+                Remove_Temp_Files_Update_Function
             }
 
             if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
@@ -598,6 +615,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
                 function Run_Windows_Defender_Scan_Execution_Function {
+
                     # Check defender status
                     if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
                         Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
@@ -616,6 +634,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
                 function Analyze_Processes_Handle_Function {
+                    
                     Get-Process | Where-Object -FilterScript {$_.Responding -eq $false} | Stop-Process
                     $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
 
@@ -662,7 +681,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # This function will take input from the Perceptron that determines the activation of the functions
         
-        Write-Host "[+] Problem Determined : Stop Errors resulting in system crashes" -ForegroundColor Green
+        Write-Host "[+] Problem Determined : Stop Errors" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -676,7 +695,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Forward_Memory_Optimizing_Parameters_Fowarding_Function {
         # Forwards the output of model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : Bad memory" -ForegroundColor Green
+        Write-Host "[+] Problem Determined : Bad Memory" -ForegroundColor Green
         
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -691,7 +710,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # Forwards the output of the model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : bad security controls" -ForegroundColor Green
+        Write-Host "[+] Problem Determined : Poor Security Controls" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -706,7 +725,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Forward_Network_Optimization_Parameters_Forwarding_Function {
         # Forwards the output of the model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : poor network configuration" -ForegroundColor Green
+        Write-Host "[+] Problem Determined : Poor Network Configuration" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -733,7 +752,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[*] Checking if Stop Errors is a potential problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
-        Write-Host "[+] Injecting Log Data in Model" -ForegroundColor Cyan
+        Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if stop errors is a problem.
 
@@ -754,7 +773,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[*] Checking if memory failures if a problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
-        Write-Host "[+] Injecting Log Data in Model" -ForegroundColor Cyan
+        Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if memory is a problem.
 
@@ -774,7 +793,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[*] Checking if poor security controls are a problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
-        Write-Host "[+] Injecting Log Data in Model" -ForegroundColor Cyan
+        Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
         # TODO -> Code to feed parsed event log data into the perceptron. To determine if bad security controls are present. 
 
@@ -794,7 +813,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[*] Checking if Current Network configuration is a problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
-        Write-Host "[+] Injecting Log Data in Model" -ForegroundColor Cyan
+        Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
 
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if network configuration is not optimized. 
