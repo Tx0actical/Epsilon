@@ -160,9 +160,9 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
 if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[0]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[1]) -or ($Global:HostOSVersion.WindowsProductName -contains $Global:IncompatibleOSVersion[2])) {
 
     Write-Host "[*] Intializing Epsilon" -ForegroundColor Green
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 1
     Write-Host "[*] Do not interrupt execution. Keep the system plugged in. Follow Prompts as they appear." -ForegroundColor Yellow
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 1
 
 
         # ********************END OF -> Initialization Section********************
@@ -634,7 +634,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
             if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
                 function Analyze_Processes_Handle_Function {
-                    
+
                     Get-Process | Where-Object -FilterScript {$_.Responding -eq $false} | Stop-Process
                     $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
 
