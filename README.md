@@ -10,6 +10,10 @@
 
 # Stochastic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
+## Aim
+
+Provide the least possible element of user interaction in which the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and apply the fix.
+
 ## Overview
 
 In a lot of other optimization software/scripts, user interaction is required to interface with the tool, so that a better determination of the problem can be made. This involves passing parameters, calling specific functions, using dedicated troubleshooters to get the desired results. This might not be the most user friendly.
@@ -19,10 +23,6 @@ This is where Stochastic Optimization (SO) comes in. In classical sense, SO mean
 Problems like BSODs (Blue Screen of Death) can have multiple causes like Bad driver configuration, recent Software updates, Hardware problems like Memory failures, Power failures, Disk Errors. The initial state of the system is unoptimized. The final state can be assumed to be optimized, for the sake of argument. But as seen in the BSOD example, there might not be a single cause and any automatic optimization may fail to rectify the issue, as complex system misbehaviours most often require manual analysis like manual debugging. Hence, realistically, automatic optimization approches like this one, may or may not be able to fix all issues, that's why the nature of AI environment is stochastic in nature. 
 
 The heart of this script is a MultiLayer Perceptron (MLP) that is trained to recognise patterns of mis-configuration and/or inefficient settings (such as Background Apps that might waste system resources). After determinig the problem, the MLP is used activate different sections of the main script, `Script.ps1`, to try and fix the issues.
-
-In a nutshell the script aims to:
-
-> Provide the least possible element of user interaction in which the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and try to fix that.
 
 ## Features
 
