@@ -6,7 +6,7 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![PowerShell](https://img.shields.io/badge/powershell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
 
-:warning: The project is in a **Concept/Initial Development** stage, also indicated by badges above. Please consider side-effects before running the script and do so at your own volition. **Do not run this except for, in testing environments**.
+:warning: The project is in a **Concept/Initial Development** stage, also indicated by badges above. Please consider side-effects before running the script in production environments, do so at your own volition. **Do not run this script, except for, testing environments**.
 
 # Stochastic Optimization of System Wide Performance Characteristics in WindowsOS using PowerShell.
 
