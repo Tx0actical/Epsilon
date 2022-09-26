@@ -39,7 +39,9 @@ The script has the following features:
 > Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
 
 - Clone the repository:
-- ```git clone https://github.com/Tx0actical/EpsilonScript```
+```
+git clone https://github.com/Tx0actical/EpsilonScript
+```
 - `cd` into the repository directory
 - ```cd [Drive]://[Path]/[to]/[Script]```
 - ```.\Script.ps1```
