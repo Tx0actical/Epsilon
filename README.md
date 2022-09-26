@@ -29,22 +29,22 @@ In a nutshell the script aims to:
 The script has the following features:
 
 - System File Auditing &rarr; The script uses CheckDisk (CHKDSK), System File Checker (SFC), and Deployment Image Servicing and Management (DISM) tools, to automate system-files integrity checking. 
-- Updating Capabilities &rarr; The script uses WinGet, modules such as `PSWindowsUpdate` to perform System, Microsoft Store, and Driver updates, if available.
+- Updating Capabilities &rarr; The script uses WinGet and other modules to perform System, Microsoft Store, and Driver updates, if available.
 - Network Optimization &rarr; The script aims to change DNS server to Google, changes IRP stack size, configures background apps to utilise less resources, disables Large Send Offload (LSO), Disables Windows Auto Tuning, Disable QoS Packet Scheduler, Disables P2P Update Process, with an aim to improve network performance.
 - Memory Resource Optimization &rarr; The script is capable of optimizing non-volatile memory in the system, by using the buit-in Disk Deframentor Utility, et al.
 - Security Checks &rarr; The script can start Windows Defender to perform a quick/complete scan depending upon last scan and recognise, and kill suspicious/not responding processes.
 
 ## Useage
 
-> Running the script as `Administrator` is recommended, but not necessary as it will self-elevate.
+> Running `.\PreInitScript` without `Administrator` is equivalent to running `.\InitScript` as `Administrator`.
 
 - Clone the repository:
 ```
 git clone https://github.com/Tx0actical/EpsilonScript
 ```
 - `cd` into the repository directory
-- ```cd [Drive]://[Path]/[to]/[Script]```
-- ```.\Script.ps1```
+- `cd [Drive]://[Path]/[to]/[PreInitScript]`
+- `.\PreInitScript.ps1`
 
 ## Results
 
