@@ -12,7 +12,7 @@
 
 ## Aim
 
-Provide the least possible element of user interaction in which the user doesn’t even need to specify what type of error he/she is facing, the script will auto-’magically’ pull data from logs, determine the type of error and apply the fix.
+Provide the least possible element of user interaction in which the user doesn’t even need to specify what problem affects the system, the script will auto-’magically’ pull data from logs, determine the problem and apply the fix.
 
 ## Overview
 
