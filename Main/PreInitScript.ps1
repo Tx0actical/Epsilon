@@ -1,6 +1,6 @@
 param([string] $PreInitScriptPath) 
 
-$PreInitScriptPath = "${$PSScriptRoot}InitScript.ps1"
+$PreInitScriptPath = "C:\Source\Epsilon\Main\InitScript.ps1"
 
 Write-Host "[+] Intializing Initialization Script for Epsilon" -ForegroundColor Green
 Start-Sleep -Seconds 3
@@ -23,11 +23,13 @@ function Start_InitScript_Execution_Function {
 
     # Check if user is Admin and act accordingly
     if ($IsAdmin -Contains $CurrentUser) {
-        try {
-            Start-Process -FilePath "pwsh.exe ${PreInitScriptPath}" -ArgumentList "-ExecutionPolicy Bypass -NoExit -RedirectStandardError ./debugfile.txt -WindowStyle Maximized" -Verb RunAs
-        } catch {
-            Write-Host "[-] Unable start Main script" -ForegroundColor Red
-        }
+        # try {
+            
+            Start-Process -FilePath "pwsh.exe" -ArgumentList "${PreInitScriptPath} -ExecutionPolicy Bypass -NoExit -RedirectStandardError ./debugfile.txt -WindowStyle Maximized" -Verb RunAs
+            
+        # } catch {
+        #     Write-Host "[-] Unable start Main script" -ForegroundColor Red
+        # }
 
     } else {
 
@@ -47,3 +49,4 @@ function Start_InitScript_Execution_Function {
 }
 
 Start_InitScript_Execution_Function
+
