@@ -279,7 +279,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
                 function Run_Chkdsk_Utility_Execution_Function {
 
-                    Write-Host "[*] Running CHKDSK" -ForegroundColor Yellow
+                    Write-Host "[*] Running CheckDisk Utility" -ForegroundColor Yellow
     
                     # Determine volumes present in the system, and run chkdsk on all those volumes
                     $Volume = Get-Volume
@@ -320,7 +320,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
                 function Run_Sfc_Utility_Execution_Function {
 
-                    Write-Host "[*] Running SFC" -ForegroundColor Yellow
+                    Write-Host "[*] Running System File Check" -ForegroundColor Yellow
                     # run sfc
                     sfc /scannow
                     
