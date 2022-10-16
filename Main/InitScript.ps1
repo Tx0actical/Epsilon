@@ -1,24 +1,12 @@
         # ********************Zero Section********************
 
-# This section will first check the registry value that is set when the computer is restarted in the middle of script execution.
-# If the value is set, then the script will continue from where it left off (addtional logic will be required to do that).
-# If the value is not set, then the script will start from the beginning.
-
-# &&&&&&&&&& OR &&&&&&&&&&
-
-# The restart can be handled in the end after the output dispatch center gives a green light after the result of all the functions are determined. In the meantime, restarts can be kept pending.
-
 Write-Host "[+] Importing Modules" -ForegroundColor Blue
-
 Start-Sleep -Seconds 1
-
 try {
     Import-Module -Name Microsoft.PowerShell.Diagnostics
     Import-Module -Name Microsoft.PowerShell.Utility
     Import-Module -Name Microsoft.PowerShell.Management
-
     Import-Module .\LargeFunc.psm1
-    
 } catch {
     Write-Host "[-] Unable To Import Necessary Modules" -ForegroundColor Red
 }
@@ -42,9 +30,7 @@ catch {
     Write-Host "[-] Unable To Read From Script Event" -ForegroundColor Red
 }
 
-# Function to set RunOnce registry value to 1. This will prevent the script from running again after the computer is restarted.
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
-    # Set the RunOnce key
     Write-Host "[*] Setting the RunOnce Registry key" -ForegroundColor Yellow
     $Global:RegistryPath    = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
     $Global:RegistryName    = "LastRestartCausedByScript"
@@ -56,8 +42,6 @@ function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
         
         # ********************Pre-Initialization Section********************
 
-        
-# Get OS version
 $Global:HostOSVersion = Get-ComputerInfo | Select-Object WindowsProductName
 $Global:HostPowershellVersion = $PSVersionTable.PSVersion 
 $Global:IncompatibleOSVersion = @('Windows Server 2012', 'Windows Server 2008 R2', 'Windows 8.1')
@@ -77,46 +61,46 @@ $Global:VolumeNumber                                        = $null
 $Global:LastSytemRebootDate                                 = $null
 $Global:RestartStatusVariable                               = $null
 
-# $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
-# $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
-# $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
-# $Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
-# $Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
-# $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
-# $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
-# $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
-# $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
-# $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
-# $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
-# $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
+$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
+$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
+$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
+$Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
+$Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
+$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
+$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
+$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
+$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
+$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
+$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
+$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
 
-# $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
-# $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
-# $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
-# $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
-# $Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
+$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
+$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
+$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
+$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
+$Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
 
-# $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
-# $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
-# $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
-# $Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
-# $Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
-# $Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
-# $Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
-# $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
-# $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
-# $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
-# $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
-# $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
-# $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
-# $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
-# $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
-# $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
-# $Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
-# $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
+$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
+$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
+$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
+$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
+$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
+$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
+$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
+$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
+$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
+$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
+$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
 
-# $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
-# $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
+$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
+$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
 
 # Search for the PreviousStateFile in the current directory, that should be by the name of Resume.json
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
@@ -128,7 +112,7 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
     $MinutesSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Minutes
     $SecondsSinceScriptLastRun  = (((Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem | Select-Object csname, lastbootuptime).lastbootuptime)).Seconds
 
-    # 300 seconds, a typical time to restart
+    # 300 seconds, a typical time to restart (Really?)
     # TODO -> This logic is probably not sufficient, or even incorrect. A deeper look is required to make it more robust.
     if(($DaysSinceScriptLastRun -eq 0) -and ($HoursSinceScriptLastRun -eq 0) -and ($MinutesSinceScriptLastRun -eq 0) -and ($SecondsSinceScriptLastRun -ge 300)) {
         if($null -ne (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce -Name "LastRestartCausedByScript")) {
@@ -171,15 +155,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # ********************Post-Initialization Section********************
 
 
-    # TO DO: Think about more sources of information for behaviour of Windows Systems
-
-    <#  Function to keep track of inputs after all node probability determination
-        functions are true (values determined). Input_Dispatch_Function will supply inputs to handling functions,
-        where inputs can be simply of bool type because the probabilities will determine the activation of functions that are described in the sub-sections.
-        [Parameter(Mandatory = $True)] flag can be used to determine which function was not assigned a value by the sectional functions
-        and that may provide necessary debug information and provide necessary checks during script execution. #>
-
-
+    # TO DO -> Think about more sources of information for behaviour of Windows Systems
     function __Input_Dispatch_Center_Control_Function__ {
         [CmdletBinding()] param(
 
@@ -224,13 +200,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # }
 
             function Parse_Windows_Event_Log_Handle_Function {
-
-                <#  Parse specific events, count their number subsequent blocks will try to run specific lines of code. Each try block will have an associated boolean variable that will keep track
-                    of successful or unsuccessful execution of that particular block. In the end of the function, all these variables will be together tested
-                    for true status, in an 'AND' construct. If any single one of them is false a result of unsuccessful execution
-                    then a boolean variable that finally determines the state of the current function will be set to true or false accordingly.
-
-                    variables in this function should be global #>
                 
                 # Debugging outputs
                 Write-Host "[+] Date today is $Global:CurrentDate" -ForegroundColor Blue
@@ -290,7 +259,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                         if($i -eq $Global:VolumeNumber) {
                             break
                         } else {
-                            # run chkdsk on all volumes
                             Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
                             chkdsk "$($Volume.DriveLetter[$i]):" /r
                             if($LASTEXITCODE -eq 0) {
@@ -313,7 +281,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
                 }
                 
-                # Function call
                 Run_Chkdsk_Utility_Execution_Function
             }
             
@@ -335,7 +302,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                         $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
                     }   
                 }
-                # Function call
                 Run_Sfc_Utility_Execution_Function
             }
 
@@ -346,7 +312,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Run_Dism_Utility_Execution_Function
             }
 
@@ -374,7 +339,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Update_Windows_System_Handle_Function
             }
             
@@ -382,7 +346,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 function Update_Microsoft_Store_Application_Handle_Function {
 
                     Write-Host "[*] Updating Microsoft Store Applications" -ForegroundColor Blue
-                    # update using winget
                     Write-Host "[*] Checking Microsoft Store Application updates" -ForegroundColor Yellow
                     $UpdateCheck = winget upgrade
                     if($null -eq $UpdateCheck) {
@@ -394,7 +357,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Update_Microsoft_Store_Application_Handle_Function
             }
             
@@ -448,7 +410,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Update_Windows_System_Drivers_Handle_Function
             }
 
@@ -472,7 +433,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Change_Dns_Server_Update_Function
             }
 
@@ -485,7 +445,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Change_Irp_Stack_Size_Update_Function
             }
 
@@ -497,7 +456,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Configure_Background_Applications_Settings_Handle_Function
             }
 
@@ -512,7 +470,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Disable_Large_Send_Offload_Handle_Function
             }
 
@@ -525,7 +482,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Disable_Windows_Auto_Tuning_Handle_Function
             }
 
@@ -539,7 +495,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
             }
 
@@ -560,7 +515,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Run_Disk_Defragmentor_Execution_Function
             }
 
@@ -572,7 +526,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Remove_Temp_Files_Update_Function
             }
 
@@ -605,7 +558,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Set_Increase_Pagefile_Size_Update_Function
             }
 
@@ -628,7 +580,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
                 }
 
-                # Function call
                 Run_Windows_Defender_Scan_Execution_Function
             }
 
@@ -641,12 +592,8 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                     # TODO -> Add more parameters to the definition of 'Suspicious Processes'
                 }
 
-                # Function call
                 Analyze_Processes_Handle_Function
             }
-            
-            # more things can be included in this Sub-Section, as it relates to Security
-            # PC can be checked if it is connected to a domain and all security scanning relating to domain can be then applied
 
             # ***************END OF -> Security Audit Sub-Section***************
 
@@ -657,23 +604,11 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[-] Probabilistic Activation Determination Sub-Section initialization failed" -ForegroundColor Red 
     }
 
-    # if the value of $MASTER_INPUT_DISPATCH_CENTER_FUNCTION_STATUS is set to true then control-flow will continue
-    # that will happen only when the Base Information Sub-Section is properly initialized. Hence, this variable acts as a checker.
 }
 
     # ********************Probabilistic Activation Determination (PAD) Section********************
 
-
-    <#  Functions within this section provides input to the section containing the __Input_Dispatch_Center_Control_Function__ function. Earlier, this Section was a Sub-section
-        (until commit -> 27bb259), but it has been converted because it essentially computes values and pass it to __Input_Dispatch_Center_Control_Function__ function which ACTUALLY
-        does the changes described in that. So, a Section giving input to itself isn't a great idea - it wouldn't affect the functioning of code per se, because these functions are divided
-        into the so-called 'Sections and Sub-Sections' on the basis of comments just to keep track of complexity - as it might be a source of confusion. #>
-
-
         # ***************PAD Sub-Section-1***************
-
-        <#  The reason why separate functions are required to pass the values to __Input_Dispatch_Center_Control_Function__ when it can be done right within the Perceptron functions is because all the issues require
-        their own separate result and that is possible by having separate functions of handling each issue. #>
 
     function Forward_StopError_Remediation_Parameters_Fowarding_Function {
         <#  here parameters mean which functions are required to be called in case Part-1 of PAD has determined StopError events 
@@ -744,24 +679,19 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # Individul Perceptrons to determine activation of functions depending upon the number of contributing factors
     function Invoke_Perceptron_For_Stop_Error_Parameters_Activation_Determination_Function {
-        <#  This function determines activations of specific functions that might help resolve stop errors.
-            The inputs will be the number of events that have been detected with respect to stop errors, which will be fetched from the Windows Event Logs.
-            The weights will be the impact of a function in resolving the problem. Higher impact functions will have more weight.
-            Bad driver configuration, Software updates, Hardware failures, Memory failures, Power failures, Disk Errors might be the cause #>
 
         Write-Host "[*] Checking if Stop Errors is a potential problem vector" -ForegroundColor Yellow
         Start-Sleep -Seconds 1
 
         Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
+
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if stop errors is a problem.
 
         Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
 
-        # Function call to forward function activation variables to IDCCF
         Forward_StopError_Remediation_Parameters_Fowarding_Function
-
     }
 
     Invoke_Perceptron_For_Stop_Error_Parameters_Activation_Determination_Function
@@ -775,12 +705,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
+
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if memory is a problem.
 
         Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
-        
-        # Function call to forward function activation variables to IDCCF
+
         Forward_Memory_Optimizing_Parameters_Fowarding_Function
     }
 
@@ -795,12 +725,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
         Start-Sleep -Seconds 1
+
         # TODO -> Code to feed parsed event log data into the perceptron. To determine if bad security controls are present. 
 
         Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
 
-        # Function call to forward function activation variables to IDCCF
         Forward_Security_Optimization_Parameters_Forwarding_Function
     }
 
@@ -821,7 +751,6 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
 
-        # Function call to forward function activation variables to IDCCF
         Forward_Network_Optimization_Parameters_Forwarding_Function
     }
 
@@ -832,16 +761,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # ********************Output Handling Section********************
 
-
-    <#  Output function will collect exit codes from all executed,
-        functions and will give a green light when all are boolean true
-        after that the system might proceed to restart for a final time #>
-
     function __Output_Dispatch_Center_Control_Function__ {
-        <#  if all functions determine their outputs successfully, then this function will set the
-            $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS to true, and if that is true then the system will be ready for final restart.
-            This will set the $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS which will be responsible for restarting the system. #>
-
         if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
             Write-Host "[+] System Files Checking Section successfully determined all results" -ForegroundColor Green
 
@@ -878,24 +798,14 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     }
 
     __Output_Dispatch_Center_Control_Function__ 
-
-    <#  When everything is okay, system will restart for finally although this behaviour can be updated
-        because of potiential restarts in between the script. For eg., when the system updates some 
-        registry values, among other things. That might be a pain for the user.
-
-        Another version to handle restart-needed-to-apply-changes, is to postpone the restart until all the operations are
-        completed and then restarting the system, instead of restarting the system right away, in the middle of script execution. #>
-
     function Set_Ready_For_Final_Restart_Handle_Function {
         [CmdletBinding()] param(
             [Parameter(Mandatory=$true, Position=0)] [bool] $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS
         )
         
         if($Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS) {
-            # set execution policy to default before final shutdown
-            Set-ExecutionPolicy -ExecutionPolicy Default
 
-            # restart the system
+            Set-ExecutionPolicy -ExecutionPolicy Default
             shutdown -r -t 0
         }
     }
