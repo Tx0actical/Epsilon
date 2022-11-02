@@ -616,7 +616,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # This function will take input from the Perceptron that determines the activation of the functions
         
-        Write-Host "[+] Problem Determined : Stop Errors" -ForegroundColor Green
+        Write-Host "[+] Problem Determined -> Stop Errors" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -630,7 +630,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Forward_Memory_Optimizing_Parameters_Fowarding_Function {
         # Forwards the output of model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : Bad Memory" -ForegroundColor Green
+        Write-Host "[+] Problem Determined -> Bad Memory" -ForegroundColor Green
         
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -645,7 +645,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # Forwards the output of the model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : Poor Security Controls" -ForegroundColor Green
+        Write-Host "[+] Problem Determined -> Poor Security Controls" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -660,7 +660,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Forward_Network_Optimization_Parameters_Forwarding_Function {
         # Forwards the output of the model to IDCCF, to determine function activations.
 
-        Write-Host "[+] Problem Determined : Poor Network Configuration" -ForegroundColor Green
+        Write-Host "[+] Problem Determined -> Poor Network Configuration" -ForegroundColor Green
 
         # This call to IDCCF is incomplete because
             # 1. The NN should plug the values in the function call statement.
@@ -688,7 +688,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if stop errors is a problem.
 
-        Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
+        Write-Host "[*] Determining Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
 
         Forward_StopError_Remediation_Parameters_Fowarding_Function
@@ -699,8 +699,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
     function Invoke_Perceptron_For_Memory_Opmitization_Parameters_Activation_Determination_Function {
         # This function determines activations of specific functions that might help troubleshoot and optimize memory.
 
-        # Can check for memory failues, by using Windows Memory Diagnostics.
-        Write-Host "[*] Checking if memory failures if a problem vector" -ForegroundColor Yellow
+        Write-Host "[*] Checking if memory failures if a problem vector" -ForegroundColor Yellow # Use Windows Memory Diagnostics.
         Start-Sleep -Seconds 1
 
         Write-Host "[+] Injecting Log Data into Model" -ForegroundColor Cyan
@@ -708,7 +707,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # TODO -> Code [BELOW] to feed parsed event log data into the perceptron. To determine if memory is a problem.
 
-        Write-Host "[*] Determining Appropriate Function Calls" -ForegroundColor Blue
+        Write-Host "[*] Determining Function Calls" -ForegroundColor Blue
         Start-Sleep -Seconds 1
 
         Forward_Memory_Optimizing_Parameters_Fowarding_Function
@@ -763,16 +762,16 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
     function __Output_Dispatch_Center_Control_Function__ {
         if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
-            Write-Host "[+] System Files Checking Section successfully determined all results" -ForegroundColor Green
+            Write-Host "[+] System Files Checking Section -> Successfully determined all results" -ForegroundColor Green
 
             if($Global:SET_UA_SYS_NODE_RESULT_DETERMINED -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED) {
-                Write-Host "[+] Application Update Section successfully determined all results" -ForegroundColor Green
+                Write-Host "[+] Application Update Section -> Successfully determined all results" -ForegroundColor Green
 
                 if($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED) {
-                    Write-Host "[+] Network Optimization Section successfully determined all results" -ForegroundColor Green
+                    Write-Host "[+] Network Optimization Section -> Successfully determined all results" -ForegroundColor Green
 
                     if($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED) {
-                        Write-Host "[+] Memory Resource Optimization Section successfully determined all results" -ForegroundColor Green
+                        Write-Host "[+] Memory Resource Optimization Section -> Successfully determined all results" -ForegroundColor Green
 
                         if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
                             Write-Host "[*] All Section results determined successfully, preparing final steps" -ForegroundColor Blue
