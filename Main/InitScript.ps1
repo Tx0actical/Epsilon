@@ -54,54 +54,6 @@ $Global:RegistryPath
 $Global:RegistryName
 $Global:RegistryValue  
 
-$Global:CurrentDate                                         = $null
-$Global:LastDiskOptimizeDate                                = $null
-$Global:DaysSinceDiskLastOptimized                          = $null
-$Global:VolumeNumber                                        = $null
-$Global:LastSytemRebootDate                                 = $null
-$Global:RestartStatusVariable                               = $null
-
-$Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS                = $null
-$Global:SFA_SFC_EXECUTION_FUNCTION_STATUS                   = $null
-$Global:SFA_DISM_EXECUTION_FUNCTION_STATUS                  = $null
-$Global:UA_SYS_UPDATE_FUNCTION_STATUS                       = $null
-$Global:UA_STORE_UPDATE_FUNCTION_STATUS                     = $null
-$Global:UA_DRIVER_UPDATE_FUNCTION_STATUS                    = $null
-$Global:NOP_DNS_UPDATE_FUNCTION_STATUS                      = $null
-$Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS                    = $null
-$Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS                  = $null
-$Global:NOP_LSO_DISABLE_FUNCTION_STATUS                     = $null
-$Global:NOP_ATUN_DISABLE_FUNCTION_STATUS                    = $null
-$Global:NOP_QOS_DISABLE_FUNCTION_STATUS                     = $null
-
-$Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS                  = $null
-$Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                     = $null
-$Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS               = $null
-$Global:SA_DFNDR_DISABLE_EXECUTION_STATUS                   = $null
-$Global:SA_PR_HANDLE_FUNCTION_STATUS                        = $null
-
-$Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED               = $null
-$Global:SET_SFA_SFC_NODE_RESULT_DETERMINED                  = $null
-$Global:SET_SFA_DISM_NODE_RESULT_DETERMINED                 = $null
-$Global:SET_UA_SYS_UPDATE_NODE_RESULT_DETERMINED            = $null
-$Global:SET_UA_STORE_UPDATE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_UA_DRIVER_UPDATE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED           = $null
-$Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED       = $null
-$Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED                 = $null
-$Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED          = $null
-$Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED    = $null
-$Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED         = $null
-$Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED             = $null
-
-$Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS        = $null
-$Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS       = $null
-
 # Search for the PreviousStateFile in the current directory, that should be by the name of Resume.json
 $Global:PreviousStateFile = Get-ChildItem -Path $PSScriptRoot -Recurse -ErrorAction SilentlyContinue -Force
 
@@ -154,14 +106,300 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         # ********************Post-Initialization Section********************
 
+        function Parse_Windows_Event_Log_Handle_Function {
+                
+            # Debugging outputs
+            Write-Host "[+] Date today is $Global:CurrentDate" -ForegroundColor Blue
+
+            # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
+            # display nothing. The docs might tell that. So try block is used to be on the safer side.
+            try {
+                $Global:LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname="Application"; id=258} | Select-Object TimeCreated | Select-Object -First 1
+            }
+            catch {
+                Write-Host "[-] Could not find Defrag Logs" -ForegroundColor Red
+            }
+
+            # Necessary formatting
+            $Global:LastDiskOptimizeDate = $Global:LastDiskOptimizeDate -split " " -split "="
+            $Global:LastDiskOptimizeDate = $Global:LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
+
+            # Days passed since the disk was optimized
+            $Global:DaysSinceDiskLastOptimized = New-TimeSpan -Start $Global:LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
+
+            # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
+            $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized -split "{" -split "=" 
+            $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
+            $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized -split "}"
+            $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -First 1
+
+            # Debug outputs
+            Write-Host "[+] Disk was optimized $Global:DaysSinceDiskLastOptimized days ago" -ForegroundColor Yellow  
+
+            # Optimise-Volume Cmdlet will help here
+            # Add additional parameters!
+        }
+
+        try {
+            Parse_Windows_Event_Log_Handle_Function
+        } catch {
+            Write-Host "[-] Could not parse Windows Event Logs" -ForegroundColor Red
+        }
+
+        function Run_Chkdsk_Utility_Execution_Function {
+
+            Write-Host "[*] Running CheckDisk Utility" -ForegroundColor Yellow
+
+            # Determine volumes present in the system, and run chkdsk on all those volumes
+            $Volume = Get-Volume
+            $Global:VolumeNumber = $Volume.Count
+            $i = 0
+
+            foreach ($Letter in $Volume.DriveLetter) {
+                if($i -eq $Global:VolumeNumber) {
+                    break
+                } else {
+                    Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
+                    chkdsk "$($Volume.DriveLetter[$i]):" /r
+                    if($LASTEXITCODE -eq 0) {
+
+                        Write-Host "[+] No errors were found." -ForegroundColor Green
+                    } elseif ($LASTEXITCODE -eq 1) {
+
+                        Write-Host "[+] Errors were found and fixed." -ForegroundColor Green
+                    } elseif ($LASTEXITCODE -eq 2) {
+
+                        Write-Host "[+] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified." -ForegroundColor Green
+                    } elseif ($LASTEXITCODE -eq 3) {
+
+                        Write-Host "[-] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified." -ForegroundColor Red
+                    }
+                    $i++
+                }
+            }
+        }
+
+        function Run_Sfc_Utility_Execution_Function {
+
+            Write-Host "[*] Running System File Check" -ForegroundColor Yellow
+            # run sfc
+            sfc /scannow
+            
+            # rough code start
+            if($LASTEXITCODE -eq 0) {
+                $ComputerName = Get-ComputerInfo | Select-Object CsCaption
+                $ComputerName = $ComputerName.CsCaption
+                Import-Module -Name Microsoft.PowerShell.Management
+                Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200 # -wait parameter doesn't work on local system
+
+                # rough code end
+            }   
+        }
+
+        function Run_Dism_Utility_Execution_Function {
+
+            Write-Host "[*] Running DISM" -ForegroundColor Yellow
+            
+        }
+
+        function Update_Windows_System_Handle_Function {
+
+            Write-Host "[+] Updating Windows" -ForegroundColor Blue
+            # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
+            Install-Module PSWindowsUpdate
+            $UpdateVariable = Get-WindowsUpdate
+            $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
+
+            # [!] This is working unexpectedly, opposite of expected behaviour [!]
+            if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
+                # $UpdateVariable = $False
+                Write-Host "[-] No Updates were found" -ForegroundColor Blue
+            } else {
+                # $UpdateVariable = $True
+                Write-Host "[*] Updates found, installing" -ForegroundColor Yellow
+            }
+        }
+
+        function Update_Microsoft_Store_Application_Handle_Function {
+
+            Write-Host "[*] Updating Microsoft Store Applications" -ForegroundColor Blue
+            Write-Host "[*] Checking Microsoft Store Application updates" -ForegroundColor Yellow
+            $UpdateCheck = winget upgrade
+            if($null -eq $UpdateCheck) {
+                Write-Host "[-] No updates were found" -ForegroundColor Blue
+            } else {
+                Write-Host "[*] Updates found, installing" -ForegroundColor Green
+                winget upgrade --all
+            }
+        }
+
+        function Update_Windows_System_Drivers_Handle_Function {
+
+            Write-Host "[*] Checking Windows System Drivers Updates" -ForegroundColor Yellow
+            # If the PowerShell Modules Folder is non-existing, it will be created.
+            if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
+                New-Item -ItemType Directory -Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules1 -Force
+            }
+            # Import the PowerShell Module
+            Install-Module -Name PSWindowsUpdate
+            # Specify the path usage of Windows Update registry keys
+            $Path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows'
+            
+            # Updates and Driver download
+            
+            # If the necessary keys are non-existing, they will be created
+            if ($false -eq (Test-Path $Path\WindowsUpdate)) {
+                New-Item -Path $Path -Name WindowsUpdate
+                New-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -PropertyType DWord -Value '0'
+                New-ItemProperty $Path\WindowsUpdate -Name WUServer -PropertyType DWord -Value $null
+                New-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -PropertyType DWord -Value $null
+            } else {
+                # If the value of the keys are incorrect, they will be modified
+                try {
+                    Set-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -value "0" -ErrorAction SilentlyContinue
+                    Set-ItemProperty $Path\WindowsUpdate -Name WUServer -Value $null -ErrorAction SilentlyContinue
+                    Set-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -Value $null -ErrorAction SilentlyContinue
+                }
+                catch {
+                    Write-Output '[*] Skipped modifying registry keys' -ForegroundColor Yellow
+                }
+            }
+            # Add ServiceID for Windows Update
+            Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
+
+            # Pause and give the service time to update
+            Start-Sleep 30
+
+            # Scan against Microsoft, accepting all drivers
+            Get-WUInstall -MicrosoftUpdate -AcceptAll
+
+            # Scaning against Microsoft for all Driver types, and accepting all
+            Get-WUInstall -MicrosoftUpdate Driver -AcceptAll
+
+            # Scanning against Microsoft for all Software Updates, and installing all, ignoring a reboot
+            Get-WUInstall -MicrosoftUpdate Software -AcceptAll -IgnoreReboot
+        }
+
+        function Change_Dns_Server_Update_Function {
+
+            Write-Host "[+] Changing DNS to Google's public DNS" -ForegroundColor Blue
+            # First, determine the active interface that is connected to internet
+            Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
+            # Note down InterfaceAlias name
+            Get-DnsClientServerAddress
+            # change IPv4 and IPv6 DNS servers
+            Set-DNSClientServerAddress "InterfaceAlias" –ServerAddresses ("8.8.8.8", "8.8.4.4")
+            # clear DNS cache
+            Clear-DnsClientCache
+        }
+
+        function Change_Irp_Stack_Size_Update_Function {
+
+            Write-Host "[+] Increasing IRPStackSize value from default to 32" -ForegroundColor Blue
+            New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize"
+            New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Value 0x00000020
+        }
+
+        function Configure_Background_Applications_Settings_Handle_Function {
+
+            Write-Host "[+] Disabling background apps" -ForegroundColor Blue
+            Reg Add HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications /v GlobalUserDisabled /t REG_DWORD /d 1 /f
+        }
+
+        function Disable_Large_Send_Offload_Handle_Function {
+
+            Write-Host "[+] Disabling Large Send Offload" -ForegroundColor Blue
+            $Global:Adapter = Get-NetAdapter -physical | Where-Object status -eq 'up'
+            foreach ($Object in $Global:Adapter) {
+                Disable-NetAdapterLso -Name $Object -IPv6 -IPv4
+            }
+        }
+
+        function Disable_Windows_Auto_Tuning_Handle_Function {
+
+            Write-Host "[+] Disabling Windows Auto Tuning" -ForegroundColor Blue
+            netsh int tcp set global autotuninglevel=disabled
+            netsh int tcp set global autotuninglevel=normal
+        }
+
+        function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
+
+            Write-Host "[+] Disabling QoS Packet Scheduler" -ForegroundColor Blue
+            foreach ($Object in $Global:Adapter) {
+                Disable-NetAdapterQos -Name $Object
+            }
+        }
+
+        function Run_Disk_Defragmentor_Execution_Function {
+
+            Write-Host "[*] Runnig Disk Defragmentor" -ForegroundColor Yellow
+            # Determine volumes present in the system, and run chkdsk on all those volumes
+            $Volume = Get-Volume
+            foreach ($Letter in $Volume.DriveLetter) {
+                Get-PhysicalDisk | Where-Object {$_.MediaType -eq "SSD"}
+                Optimize-Volume -DriveLetter $Letter -Verbose
+            }
+        }
+
+        function Remove_Temp_Files_Update_Function {
+
+            Write-Host "[+] Purging Windows TEMP files" -ForegroundColor Blue
+            Get-ChildItem -Path "C:\Windows\Temp" *.* -Recurse | Remove-Item -Force -Recurse
+        }
+
+        function Set_Increase_Pagefile_Size_Update_Function {
+
+            # TODO -> Get-WmiObject is not supported, in PowerShell 7, check other methods
+            # TODO -> Code needs improvement in this function
+
+            # Check if pagefiles are automatically managed
+            if($null -eq (Get-CimInstance Win32_Pagefile)) {
+                $sys = Get-WmiObject Win32_Computersystem –EnableAllPrivileges
+                $sys.AutomaticManagedPagefile = $false
+                $sys.put()
+
+                # Check pagefile size
+                Get-WmiObject WIN32_Pagefile | Select-Object Name, InitialSize, MaximumSize, FileSize
+                $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
+                if($Pagefile -eq 40000) {
+                    $Pagefile.InitialSize = 40000 # in MB
+                    $Pagefile.MaximumSize = 80000
+                    $Pagefile.put()
+                }
+            } else {
+                $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
+                $Pagefile.InitialSize = 40000 # in MB
+                $Pagefile.MaximumSize = 80000
+                $Pagefile.put()
+            }
+        }
+
+        function Run_Windows_Defender_Scan_Execution_Function {
+
+            # Check defender status
+            if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
+                Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
+                Start-Sleep -Seconds 3
+                Write-Host "[*] Performing a Quick Scan"    -ForegroundColor Blue
+                Update-MpSignature
+                Start-MpScan -ScanType QuickScan
+                Remove-MpThreat
+            }
+        }
+
+        function Analyze_Processes_Handle_Function {
+
+            Get-Process | Where-Object -FilterScript {$_.Responding -eq $false} | Stop-Process
+
+            # TODO -> Add more parameters to the definition of 'Suspicious Processes'
+        }
+
 
     # TO DO -> Think about more sources of information for behaviour of Windows Systems
     function __Input_Dispatch_Center_Control_Function__ {
         [CmdletBinding()] param(
 
-
             [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   ,
-
 
             [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS           ,
             [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS              ,
@@ -199,120 +437,26 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             #     
             # }
 
-            function Parse_Windows_Event_Log_Handle_Function {
-                
-                # Debugging outputs
-                Write-Host "[+] Date today is $Global:CurrentDate" -ForegroundColor Blue
-
-                # Get disk defragmentor logs. This is inside a try block because if the system drives were never optimized then that statement may throw an error or might
-                # display nothing. The docs might tell that. So try block is used to be on the safer side.
-                try {
-                    $Global:LastDiskOptimizeDate = Get-WinEvent -FilterHashtable @{logname="Application"; id=258} | Select-Object TimeCreated | Select-Object -First 1
-                }
-                catch {
-                    Write-Host "[-] Could not find Defrag Logs" -ForegroundColor Red
-                }
-
-                # Necessary formatting
-                $Global:LastDiskOptimizeDate = $Global:LastDiskOptimizeDate -split " " -split "="
-                $Global:LastDiskOptimizeDate = $Global:LastDiskOptimizeDate | Select-Object -Skip 1 | Select-Object -First 1
-
-                # Days passed since the disk was optimized
-                $Global:DaysSinceDiskLastOptimized = New-TimeSpan -Start $Global:LastDiskOptimizeDate -End $CurrentDate | Select-Object Days
-
-                # Maybe unnecessary formatting (better method might be available, but I don't know that yet)
-                $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized -split "{" -split "=" 
-                $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -Skip 2 | Select-Object -First 1
-                $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized -split "}"
-                $Global:DaysSinceDiskLastOptimized = $Global:DaysSinceDiskLastOptimized | Select-Object -First 1
-
-                # Debug outputs
-                Write-Host "[+] Disk was optimized $Global:DaysSinceDiskLastOptimized days ago" -ForegroundColor Yellow  
-
-                # Optimise-Volume Cmdlet will help here
-                # Add additional parameters!
-            }
-
-            try {
-                Parse_Windows_Event_Log_Handle_Function
-            } catch {
-                Write-Host "[-] Could not parse Windows Event Logs" -ForegroundColor Red
-            }
+            
 
                 # ***************END OF -> Base Information Sub-Section***************
 
             # ***************System Files Audit Sub-Section***************
-
             
 
             if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
-                function Run_Chkdsk_Utility_Execution_Function {
-
-                    Write-Host "[*] Running CheckDisk Utility" -ForegroundColor Yellow
-    
-                    # Determine volumes present in the system, and run chkdsk on all those volumes
-                    $Volume = Get-Volume
-                    $Global:VolumeNumber = $Volume.Count
-                    $i = 0
-
-                    foreach ($Letter in $Volume.DriveLetter) {
-                        if($i -eq $Global:VolumeNumber) {
-                            break
-                        } else {
-                            Write-Host "[*] Currently checking drive: $($Volume.DriveLetter[$i])" -ForegroundColor Yellow
-                            chkdsk "$($Volume.DriveLetter[$i]):" /r
-                            if($LASTEXITCODE -eq 0) {
-
-                                Write-Host "[+] No errors were found." -ForegroundColor Green
-                            } elseif ($LASTEXITCODE -eq 1) {
-
-                                Write-Host "[+] Errors were found and fixed." -ForegroundColor Green
-                            } elseif ($LASTEXITCODE -eq 2) {
-
-                                Write-Host "[+] Performed disk cleanup (such as garbage collection) or did not perform cleanup because /f was not specified." -ForegroundColor Green
-                            } elseif ($LASTEXITCODE -eq 3) {
-
-                                Write-Host "[-] Could not check the disk, errors could not be fixed, or errors were not fixed because /f was not specified." -ForegroundColor Red
-                            }
-                            $i++
-                        }
-                    }
-    
-                    $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
-                }
-                
                 Run_Chkdsk_Utility_Execution_Function
+                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
             }
             
             if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
-                function Run_Sfc_Utility_Execution_Function {
-
-                    Write-Host "[*] Running System File Check" -ForegroundColor Yellow
-                    # run sfc
-                    sfc /scannow
-                    
-                    # rough code start
-                    if($LASTEXITCODE -eq 0) {
-                        $ComputerName = Get-ComputerInfo | Select-Object CsCaption
-                        $ComputerName = $ComputerName.CsCaption
-                        Import-Module -Name Microsoft.PowerShell.Management
-                        Restart-Computer -ComputerName $ComputerName -Wait -For "Powershell" -Timeout 200 # -wait parameter doesn't work on local system
-
-                        # rough code end
-                        $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
-                    }   
-                }
                 Run_Sfc_Utility_Execution_Function
+                $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
-                function Run_Dism_Utility_Execution_Function {
-
-                    Write-Host "[*] Running DISM" -ForegroundColor Yellow
-                    $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
-                }
-
                 Run_Dism_Utility_Execution_Function
+                $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
             }
 
             # ***************END OF -> System Files Audit Sub-Section***************
@@ -320,97 +464,18 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************Update Application Sub-Section***************
 
             if($Global:UA_SYS_UPDATE_FUNCTION_STATUS) {
-                function Update_Windows_System_Handle_Function {
-
-                    Write-Host "[+] Updating Windows" -ForegroundColor Blue
-                    # Determine Windows updated or not (can use a boolean variable after calling Update_Windows_System_Handle_Function and determine its result)
-                    Install-Module PSWindowsUpdate
-                    $UpdateVariable = Get-WindowsUpdate
-                    $UpdateVariable = $UpdateVariable | Select-Object ComputerName -First 1
-
-                    # [!] This is working unexpectedly, opposite of expected behaviour [!]
-                    if ($UpdateVariable -contains @{ComputerName = Get-ComputerInfo | Select-Object CsCaption}) {
-                        # $UpdateVariable = $False
-                        Write-Host "[-] No Updates were found" -ForegroundColor Blue
-                    } else {
-                        # $UpdateVariable = $True
-                        Write-Host "[*] Updates found, installing" -ForegroundColor Yellow
-                    }
-                    $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
-                }
-
                 Update_Windows_System_Handle_Function
+                $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
             }
             
             if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
-                function Update_Microsoft_Store_Application_Handle_Function {
-
-                    Write-Host "[*] Updating Microsoft Store Applications" -ForegroundColor Blue
-                    Write-Host "[*] Checking Microsoft Store Application updates" -ForegroundColor Yellow
-                    $UpdateCheck = winget upgrade
-                    if($null -eq $UpdateCheck) {
-                        Write-Host "[-] No updates were found" -ForegroundColor Blue
-                    } else {
-                        Write-Host "[*] Updates found, installing" -ForegroundColor Green
-                        winget upgrade --all
-                    }
-                    $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
-                }
-
                 Update_Microsoft_Store_Application_Handle_Function
+                $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
             }
             
             if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
-                function Update_Windows_System_Drivers_Handle_Function {
-
-                    Write-Host "[*] Checking Windows System Drivers Updates" -ForegroundColor Yellow
-                    # If the PowerShell Modules Folder is non-existing, it will be created.
-                    if ($false -eq (Test-Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules)) {
-                        New-Item -ItemType Directory -Path $env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules1 -Force
-                    }
-                    # Import the PowerShell Module
-                    Install-Module -Name PSWindowsUpdate
-                    # Specify the path usage of Windows Update registry keys
-                    $Path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows'
-                    
-                    # Updates and Driver download
-                    
-                    # If the necessary keys are non-existing, they will be created
-                    if ($false -eq (Test-Path $Path\WindowsUpdate)) {
-                        New-Item -Path $Path -Name WindowsUpdate
-                        New-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -PropertyType DWord -Value '0'
-                        New-ItemProperty $Path\WindowsUpdate -Name WUServer -PropertyType DWord -Value $null
-                        New-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -PropertyType DWord -Value $null
-                    } else {
-                        # If the value of the keys are incorrect, they will be modified
-                        try {
-                            Set-ItemProperty $Path\WindowsUpdate -Name DisableDualScan -value "0" -ErrorAction SilentlyContinue
-                            Set-ItemProperty $Path\WindowsUpdate -Name WUServer -Value $null -ErrorAction SilentlyContinue
-                            Set-ItemProperty $Path\WindowsUpdate -Name WUStatusServer -Value $null -ErrorAction SilentlyContinue
-                        }
-                        catch {
-                            Write-Output '[*] Skipped modifying registry keys' -ForegroundColor Yellow
-                        }
-                    }
-                    # Add ServiceID for Windows Update
-                    Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
-
-                    # Pause and give the service time to update
-                    Start-Sleep 30
-
-                    # Scan against Microsoft, accepting all drivers
-                    Get-WUInstall -MicrosoftUpdate -AcceptAll
-
-                    # Scaning against Microsoft for all Driver types, and accepting all
-                    Get-WUInstall -MicrosoftUpdate Driver -AcceptAll
-
-                    # Scanning against Microsoft for all Software Updates, and installing all, ignoring a reboot
-                    Get-WUInstall -MicrosoftUpdate Software -AcceptAll -IgnoreReboot
-
-                    $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
-                }
-
                 Update_Windows_System_Drivers_Handle_Function
+                $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
             }
 
             # ***************END OF -> Update Application Sub-Section***************
@@ -418,84 +483,33 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************Network Optimization Sub-Section***************
 
             if($Global:NOP_DNS_UPDATE_FUNCTION_STATUS) {
-                function Change_Dns_Server_Update_Function {
-
-                    Write-Host "[+] Changing DNS to Google's public DNS" -ForegroundColor Blue
-                    # First, determine the active interface that is connected to internet
-                    Get-CimInstance Win32_NetworkAdapter -Filter "netconnectionstatus = 2" | Select-Object netconnectionid, name, InterfaceIndex, netconnectionstatus
-                    # Note down InterfaceAlias name
-                    Get-DnsClientServerAddress
-                    # change IPv4 and IPv6 DNS servers
-                    Set-DNSClientServerAddress "InterfaceAlias" –ServerAddresses ("8.8.8.8", "8.8.4.4")
-                    # clear DNS cache
-                    Clear-DnsClientCache
-
-                    $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
-                }
-
                 Change_Dns_Server_Update_Function
+                $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
-                function Change_Irp_Stack_Size_Update_Function {
-
-                    Write-Host "[+] Increasing IRPStackSize value from default to 32" -ForegroundColor Blue
-                    New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize"
-                    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Value 0x00000020
-                    $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
-                }
-
                 Change_Irp_Stack_Size_Update_Function
+                $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
-                function Configure_Background_Applications_Settings_Handle_Function {
-
-                    Write-Host "[+] Disabling background apps" -ForegroundColor Blue
-                    Reg Add HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications /v GlobalUserDisabled /t REG_DWORD /d 1 /f
-                    $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
-                }
-
                 Configure_Background_Applications_Settings_Handle_Function
+                $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
-                function Disable_Large_Send_Offload_Handle_Function {
-
-                    Write-Host "[+] Disabling Large Send Offload" -ForegroundColor Blue
-                    $Global:Adapter = Get-NetAdapter -physical | Where-Object status -eq 'up'
-                    foreach ($Object in $Global:Adapter) {
-                        Disable-NetAdapterLso -Name $Object -IPv6 -IPv4
-                    }
-                    $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
-                }
-
                 Disable_Large_Send_Offload_Handle_Function
+                $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
-                function Disable_Windows_Auto_Tuning_Handle_Function {
-
-                    Write-Host "[+] Disabling Windows Auto Tuning" -ForegroundColor Blue
-                    netsh int tcp set global autotuninglevel=disabled
-                    netsh int tcp set global autotuninglevel=normal
-                    $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
-                }
-
                 Disable_Windows_Auto_Tuning_Handle_Function
+                $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
-                function Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function {
-
-                    Write-Host "[+] Disabling QoS Packet Scheduler" -ForegroundColor Blue
-                    foreach ($Object in $Global:Adapter) {
-                        Disable-NetAdapterQos -Name $Object
-                    }
-                    $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
-                }
-
                 Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
+                $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
             }
 
             # ***************END OF -> Network Optimization Sub-Section***************
@@ -503,62 +517,18 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************Memory Resource Optimization Sub-Section***************
 
             if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
-                function Run_Disk_Defragmentor_Execution_Function {
-
-                    Write-Host "[*] Runnig Disk Defragmentor" -ForegroundColor Yellow
-                    # Determine volumes present in the system, and run chkdsk on all those volumes
-                    $Volume = Get-Volume
-                    foreach ($Letter in $Volume.DriveLetter) {
-                        Get-PhysicalDisk | Where-Object {$_.MediaType -eq "SSD"}
-                        Optimize-Volume -DriveLetter $Letter -Verbose
-                    }
-                    $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
-                }
-
                 Run_Disk_Defragmentor_Execution_Function
+                $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
-                function Remove_Temp_Files_Update_Function {
-
-                    Write-Host "[+] Purging Windows TEMP files" -ForegroundColor Blue
-                    Get-ChildItem -Path "C:\Windows\Temp" *.* -Recurse | Remove-Item -Force -Recurse
-                    $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
-                }
-
                 Remove_Temp_Files_Update_Function
+                $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
-                function Set_Increase_Pagefile_Size_Update_Function {
-
-                    # TODO -> Get-WmiObject is not supported, in PowerShell 7, check other methods
-                    # TODO -> Code needs improvement in this function
-
-                    # Check if pagefiles are automatically managed
-                    if($null -eq (Get-CimInstance Win32_Pagefile)) {
-                        $sys = Get-WmiObject Win32_Computersystem –EnableAllPrivileges
-                        $sys.AutomaticManagedPagefile = $false
-                        $sys.put()
-
-                        # Check pagefile size
-                        Get-WmiObject WIN32_Pagefile | Select-Object Name, InitialSize, MaximumSize, FileSize
-                        $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
-                        if($Pagefile -eq 40000) {
-                            $Pagefile.InitialSize = 40000 # in MB
-                            $Pagefile.MaximumSize = 80000
-                            $Pagefile.put()
-                        }
-                    } else {
-                        $Pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq “C:\pagefile.sys”}
-                        $Pagefile.InitialSize = 40000 # in MB
-                        $Pagefile.MaximumSize = 80000
-                        $Pagefile.put()
-                    }
-                    $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
-                }
-
                 Set_Increase_Pagefile_Size_Update_Function
+                $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
             }
 
             # ***************END OF -> Memory Resource Optimization Sub-Section***************
@@ -566,33 +536,13 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
             # ***************Security Audit Sub-Section***************
 
             if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
-                function Run_Windows_Defender_Scan_Execution_Function {
-
-                    # Check defender status
-                    if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
-                        Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
-                        Start-Sleep -Seconds 3
-                        Write-Host "[*] Performing a Quick Scan"    -ForegroundColor Blue
-                        Update-MpSignature
-                        Start-MpScan -ScanType QuickScan
-                        Remove-MpThreat
-                    }
-                    $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
-                }
-
                 Run_Windows_Defender_Scan_Execution_Function
+                $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
             }
 
             if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
-                function Analyze_Processes_Handle_Function {
-
-                    Get-Process | Where-Object -FilterScript {$_.Responding -eq $false} | Stop-Process
-                    $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
-
-                    # TODO -> Add more parameters to the definition of 'Suspicious Processes'
-                }
-
                 Analyze_Processes_Handle_Function
+                $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
             }
 
             # ***************END OF -> Security Audit Sub-Section***************
