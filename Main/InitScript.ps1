@@ -442,13 +442,13 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 # ***************END OF -> Base Information Sub-Section***************
 
             # ***************System Files Audit Sub-Section***************
-            
+
 
             if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
                 Run_Chkdsk_Utility_Execution_Function
                 $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
             }
-            
+
             if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
                 Run_Sfc_Utility_Execution_Function
                 $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
@@ -467,12 +467,12 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
                 Update_Windows_System_Handle_Function
                 $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
             }
-            
+
             if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
                 Update_Microsoft_Store_Application_Handle_Function
                 $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
             }
-            
+
             if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
                 Update_Windows_System_Drivers_Handle_Function
                 $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
