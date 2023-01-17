@@ -553,7 +553,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
     function Forward_Memory_Optimizing_Parameters_Fowarding_Function {
@@ -567,7 +567,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
     function Forward_Security_Optimization_Parameters_Forwarding_Function {
@@ -582,7 +582,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
     }
 
@@ -597,7 +597,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
 
