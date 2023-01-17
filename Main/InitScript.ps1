@@ -1,33 +1,25 @@
         # ********************Zero Section********************
 
 Write-Host "[+] Importing Modules" -ForegroundColor Blue
-Start-Sleep -Seconds 1
+Start-Sleep -Seconds 3
 try {
     Import-Module -Name Microsoft.PowerShell.Diagnostics
     Import-Module -Name Microsoft.PowerShell.Utility
     Import-Module -Name Microsoft.PowerShell.Management
     Import-Module .\LargeFunc.psm1
+    Import-Module .\UtilFunc.psm1
 } catch {
-    Write-Host "[-] Unable To Import Necessary Modules" -ForegroundColor Red
+    Write-Host "[-] Unable To Import Necessary Modules. Exiting..." -ForegroundColor Red
+    exit 1
 }
 
 # Script records itself into the event log, for determination of last runtime.
 try {
     New-EventLog    -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -Message "EpsilonScript Instance"
+    Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance" 
+    Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1 
 } catch {
-    Write-Host "[-] Unable To Create a Script Event" -ForegroundColor Red
-}
-try {
-    Write-EventLog  -LogName "PowerShellCore/Operational" -Source "PowerShellCore" -EventID 4104 -Message "EpsilonScript Instance"  
-}
-catch {
-    Write-Host "[-] Unable To Write To Script Event" -ForegroundColor Red
-}
-try {
-    Get-WinEvent    -LogName "PowerShellCore/Operational" -MaxEvents 1
-}
-catch {
-    Write-Host "[-] Unable To Read From Script Event" -ForegroundColor Red
+    Write-Host "[-] Error in Script Event creation" -ForegroundColor Red
 }
 
 function Set_RunOnce_Registry_Key_Before_Restart_Handle_Function {
@@ -87,7 +79,7 @@ function Resume_Script_Execution_With_Previous_State_Handle_Function {
     }
 }
 
-#Requires -Version 7.2.0
+#Requires -Version 7.0
 
         # ********************END OF -> Pre-Initialization Section********************
 
@@ -376,15 +368,16 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         function Run_Windows_Defender_Scan_Execution_Function {
 
-            # Check defender status
-            if(((Get-MpComputerStatus).AntivirusEnabled) -eq "True") {
-                Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
-                Start-Sleep -Seconds 3
-                Write-Host "[*] Performing a Quick Scan"    -ForegroundColor Blue
-                Update-MpSignature
-                Start-MpScan -ScanType QuickScan
-                Remove-MpThreat
+            # Check defender status and optimize settings
+            if((Get-MpComputerStatus).AntivirusEnabled -ne "True") {
+                Write-Host "[-] Windows Defender not enabled"
             }
+            Write-Host "[+] Starting Windows Defender"  -ForegroundColor Green
+            Start-Sleep -Seconds 3
+            Write-Host "[*] Performing a Quick Scan"    -ForegroundColor Blue
+            Update-MpSignature
+            Start-MpScan -ScanType QuickScan
+            Remove-MpThreat
         }
 
         function Analyze_Processes_Handle_Function {
@@ -426,134 +419,120 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
 
         Write-Host "[*] Checking Probabilistic Activation Determination Sub-Section Intitialization" -ForegroundColor Blue
 
-        if($Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True) {
+        if(-not($Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS -eq $True)) {
 
-            Write-Host "[+] Sub-Section initialization completed" -ForegroundColor Green
+            Write-Host "[-] Probabilistic Activation Determination Sub-Section initialization failed. Exiting..." -ForegroundColor Red 
+            exit 1
+        }
 
-        # ***************Base Information Sub-Section***************
+        Write-Host "[+] Sub-Section initialization completed" -ForegroundColor Green
 
-            # function Get_System_Information_Handle_Function {
-            #     # Get system information on the host
-            #     
-            # }
+        # ***************System Files Audit Sub-Section***************
 
-            
+        if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
+            Run_Chkdsk_Utility_Execution_Function
+            $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
+        }
 
-                # ***************END OF -> Base Information Sub-Section***************
+        if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
+            Run_Sfc_Utility_Execution_Function
+            $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************System Files Audit Sub-Section***************
+        if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
+            Run_Dism_Utility_Execution_Function
+            $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
+        }
 
+        # ***************END OF -> System Files Audit Sub-Section***************
 
-            if($Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS -eq $True) {
-                Run_Chkdsk_Utility_Execution_Function
-                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED = $True
-            }
+        # ***************Update Application Sub-Section***************
 
-            if($Global:SFA_SFC_EXECUTION_FUNCTION_STATUS) {
-                Run_Sfc_Utility_Execution_Function
-                $Global:SET_SFA_SFC_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:UA_SYS_UPDATE_FUNCTION_STATUS) {
+            Update_Windows_System_Handle_Function
+            $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:SFA_DISM_EXECUTION_FUNCTION_STATUS) {
-                Run_Dism_Utility_Execution_Function
-                $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
+            Update_Microsoft_Store_Application_Handle_Function
+            $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************END OF -> System Files Audit Sub-Section***************
+        if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
+            Update_Windows_System_Drivers_Handle_Function
+            $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************Update Application Sub-Section***************
+        # ***************END OF -> Update Application Sub-Section***************
 
-            if($Global:UA_SYS_UPDATE_FUNCTION_STATUS) {
-                Update_Windows_System_Handle_Function
-                $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
-            }
+        # ***************Network Optimization Sub-Section***************
 
-            if($Global:UA_STORE_UPDATE_FUNCTION_STATUS) {
-                Update_Microsoft_Store_Application_Handle_Function
-                $Global:SET_UA_STORE_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:NOP_DNS_UPDATE_FUNCTION_STATUS) {
+            Change_Dns_Server_Update_Function
+            $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:UA_DRIVER_UPDATE_FUNCTION_STATUS) {
-                Update_Windows_System_Drivers_Handle_Function
-                $Global:SET_UA_SYS_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
+            Change_Irp_Stack_Size_Update_Function
+            $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************END OF -> Update Application Sub-Section***************
+        if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
+            Configure_Background_Applications_Settings_Handle_Function
+            $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************Network Optimization Sub-Section***************
+        if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
+            Disable_Large_Send_Offload_Handle_Function
+            $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:NOP_DNS_UPDATE_FUNCTION_STATUS) {
-                Change_Dns_Server_Update_Function
-                $Global:SET_NOP_DNS_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
+            Disable_Windows_Auto_Tuning_Handle_Function
+            $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS) {
-                Change_Irp_Stack_Size_Update_Function
-                $Global:SET_NOP_IRPSS_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
+            Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
+            $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS) {
-                Configure_Background_Applications_Settings_Handle_Function
-                $Global:SET_NOP_BAPP_NODE_RESULT_DETERMINED = $True
-            }
+        # ***************END OF -> Network Optimization Sub-Section***************
 
-            if($Global:NOP_LSO_DISABLE_FUNCTION_STATUS) {
-                Disable_Large_Send_Offload_Handle_Function
-                $Global:SET_NOP_LSO_NODE_RESULT_DETERMINED = $True
-            }
+        # ***************Memory Resource Optimization Sub-Section***************
 
-            if($Global:NOP_ATUN_DISABLE_FUNCTION_STATUS) {
-                Disable_Windows_Auto_Tuning_Handle_Function
-                $Global:SET_NOP_ATUN_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
+            Run_Disk_Defragmentor_Execution_Function
+            $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:NOP_QOS_DISABLE_FUNCTION_STATUS) {
-                Disable_Quality_Of_Service_Packet_Scheduler_Handle_Function
-                $Global:SET_NOP_QOS_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
+            Remove_Temp_Files_Update_Function
+            $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************END OF -> Network Optimization Sub-Section***************
+        if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
+            Set_Increase_Pagefile_Size_Update_Function
+            $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************Memory Resource Optimization Sub-Section***************
+        # ***************END OF -> Memory Resource Optimization Sub-Section***************
 
-            if($Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS) {
-                Run_Disk_Defragmentor_Execution_Function
-                $Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED = $True
-            }
+        # ***************Security Audit Sub-Section***************
 
-            if($Global:MRO_TEMP_UPDATE_FUNCTION_STATUS) {
-                Remove_Temp_Files_Update_Function
-                $Global:SET_MRO_TEMP_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
+            Run_Windows_Defender_Scan_Execution_Function
+            $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
+        }
 
-            if($Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS) {
-                Set_Increase_Pagefile_Size_Update_Function
-                $Global:SET_MRO_INC_NODE_RESULT_DETERMINED = $True
-            }
+        if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
+            Analyze_Processes_Handle_Function
+            $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
+        }
 
-            # ***************END OF -> Memory Resource Optimization Sub-Section***************
+        # ***************END OF -> Security Audit Sub-Section***************
 
-            # ***************Security Audit Sub-Section***************
-
-            if($Global:SA_DFNDR_DISABLE_EXECUTION_STATUS) {
-                Run_Windows_Defender_Scan_Execution_Function
-                $Global:SET_SA_DFNDR_NODE_RESULT_DETERMINED = $True
-            }
-
-            if($Global:SA_PR_HANDLE_FUNCTION_STATUS) {
-                Analyze_Processes_Handle_Function
-                $Global:SET_SA_PR_NODE_RESULT_DETERMINED = $True
-            }
-
-            # ***************END OF -> Security Audit Sub-Section***************
-
-            # ********************END OF -> Post-Initialization Section********************
-
-
-    } else {
-        Write-Host "[-] Probabilistic Activation Determination Sub-Section initialization failed" -ForegroundColor Red 
-    }
-
+        # ********************END OF -> Post-Initialization Section********************
 }
 
     # ********************Probabilistic Activation Determination (PAD) Section********************
@@ -574,7 +553,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
     function Forward_Memory_Optimizing_Parameters_Fowarding_Function {
@@ -588,7 +567,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
     function Forward_Security_Optimization_Parameters_Forwarding_Function {
@@ -603,7 +582,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
     }
 
@@ -618,10 +597,9 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         
         # TODO -> Complete the call statement in such a way that the Network.ps1 script can fill in the IDCCF parameters at runtime.
         
-        __Input_Dispatch_Center_Control_Function__
+        __Input_Dispatch_Center_Control_Function__ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     }
 
-    
 
         # ***************END OF -> PAD Sub-Section-1***************
 
@@ -711,39 +689,95 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # ********************Output Handling Section********************
 
     function __Output_Dispatch_Center_Control_Function__ {
-        if($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED) {
-            Write-Host "[+] System Files Checking Section -> Successfully determined all results" -ForegroundColor Green
+        [CmdletBinding()] param(
 
-            if($Global:SET_UA_SYS_NODE_RESULT_DETERMINED -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED) {
-                Write-Host "[+] Application Update Section -> Successfully determined all results" -ForegroundColor Green
+            [Parameter(Position = 0,  Mandatory = $True)] [bool] $Global:INPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS   ,
 
-                if($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED) {
-                    Write-Host "[+] Network Optimization Section -> Successfully determined all results" -ForegroundColor Green
+            [Parameter(Position = 1,  Mandatory = $True)] [bool] $Global:SFA_CHKDSK_EXECUTION_FUNCTION_STATUS           ,
+            [Parameter(Position = 2,  Mandatory = $True)] [bool] $Global:SFA_SFC_EXECUTION_FUNCTION_STATUS              ,
+            [Parameter(Position = 3,  Mandatory = $True)] [bool] $Global:SFA_DISM_EXECUTION_FUNCTION_STATUS             ,
 
-                    if($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED) {
-                        Write-Host "[+] Memory Resource Optimization Section -> Successfully determined all results" -ForegroundColor Green
+            [Parameter(Position = 4,  Mandatory = $True)] [bool] $Global:UA_SYS_UPDATE_FUNCTION_STATUS                  ,
+            [Parameter(Position = 5,  Mandatory = $True)] [bool] $Global:UA_STORE_UPDATE_FUNCTION_STATUS                ,
+            [Parameter(Position = 6,  Mandatory = $True)] [bool] $Global:UA_DRIVER_UPDATE_FUNCTION_STATUS               ,
 
-                        if($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED) {
-                            Write-Host "[*] All Section results determined successfully, preparing final steps" -ForegroundColor Blue
+            [Parameter(Position = 7,  Mandatory = $True)] [bool] $Global:NOP_DNS_UPDATE_FUNCTION_STATUS                 ,
+            [Parameter(Position = 8,  Mandatory = $True)] [bool] $Global:NOP_IRPSS_UPDATE_FUNCTION_STATUS               ,
+            [Parameter(Position = 9,  Mandatory = $True)] [bool] $Global:NOP_BAPP_CONFIGURE_FUNCTION_STATUS             ,
+            [Parameter(Position = 10, Mandatory = $True)] [bool] $Global:NOP_LSO_DISABLE_FUNCTION_STATUS                ,
+            [Parameter(Position = 11, Mandatory = $True)] [bool] $Global:NOP_ATUN_DISABLE_FUNCTION_STATUS               ,
+            [Parameter(Position = 12, Mandatory = $True)] [bool] $Global:NOP_QOS_DISABLE_FUNCTION_STATUS                ,
 
-                            # if all the above are true then the system will be ready for final restart and $Global:FINAL_RESTART_HANDLE_FUNCTION_STATUS will be set to true
-                            $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS = $True
+            [Parameter(Position = 14, Mandatory = $True)] [bool] $Global:MRO_DFRG_EXECUTION_FUNCTION_STATUS             ,
+            [Parameter(Position = 15, Mandatory = $True)] [bool] $Global:MRO_TEMP_UPDATE_FUNCTION_STATUS                ,
+            [Parameter(Position = 16, Mandatory = $True)] [bool] $Global:MRO_INC_PFSIZE_UPDATE_FUNCTION_STATUS          ,
 
-                        } else {
-                            Write-Host "[!] Security Audit Section Failed" -ForegroundColor Red
-                        }
-                    } else {
-                        Write-Host "[!] Memory Resource Optimization Section Failed" -ForegroundColor Red
-                    }
-                } else {
-                    Write-Host "[!] Network Optimization Section Failed" -ForegroundColor Red
-                }
-            } else {
-                Write-Host "[!] Update Application Section Failed" -ForegroundColor Red
-            }
-        } else {
+            [Parameter(Position = 17, Mandatory = $True)] [bool] $Global:SA_DFNDR_DISABLE_EXECUTION_STATUS              ,
+            [Parameter(Position = 18, Mandatory = $True)] [bool] $Global:SA_PR_HANDLE_FUNCTION_STATUS
+        )
+
+        if(-not($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED  -or 
+                $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED -or 
+                $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED)) {
+    
             Write-Host "[!] System Files Section Failed" -ForegroundColor Red
+            exit 1
         }
+        Write-Host "[+] System Files Checking Section -> Successfully determined all results" -ForegroundColor Green
+
+        if(-not($Global:SET_UA_SYS_NODE_RESULT_DETERMINED   -or 
+                $Global:SET_UA_STORE_NODE_RESULT_DETERMINED -or 
+                $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED)) {
+
+            Write-Host "[!] Update Application Section Failed" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[+] Application Update Section -> Successfully determined all results" -ForegroundColor Green
+
+        if(-not($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED     -or 
+                $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED   -or 
+                $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or 
+                $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED    -or 
+                $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED   -or 
+                $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED    -or 
+                $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED)) {
+
+            Write-Host "[!] Network Optimization Section Failed" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[+] Network Optimization Section -> Successfully determined all results" -ForegroundColor Green
+
+        if(-not($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED              -or 
+                $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or 
+                $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED)) {
+
+            Write-Host "[!] Memory Resource Optimization Section Failed" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[+] Memory Resource Optimization Section -> Successfully determined all results" -ForegroundColor Green
+
+        if(-not($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or 
+                $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED)) {
+
+            Write-Host "[!] Security Audit Section Failed" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[*] Security Audit Section results determined successfully, preparing final steps" -ForegroundColor Green
+
+        # Check all statuses for activation of __Output_Dispatch_Center_Control_Function__
+        if (-not (($Global:SET_SFA_SFC_NODE_RESULT_DETERMINED         -or $Global:SET_SFA_DISM_NODE_RESULT_DETERMINED              -or $Global:SET_SFA_CHKDSK_NODE_RESULT_DETERMINED)`
+            -and ($Global:SET_UA_SYS_NODE_RESULT_DETERMINED           -or $Global:SET_UA_STORE_NODE_RESULT_DETERMINED              -or $Global:SET_UA_DRIVER_NODE_RESULT_DETERMINED)`
+            -and ($Global:SET_NOP_DNS_UPDATE_NODE_RESULT_DETERMINED   -or $Global:SET_NOP_IRPSS_UPDATE_NODE_RESULT_DETERMINED      -or $Global:SET_NOP_BAPP_CONFIGURE_NODE_RESULT_DETERMINED -or 
+                  $Global:SET_NOP_LSO_DISABLE_NODE_RESULT_DETERMINED  -or $Global:SET_NOP_ATUN_DISABLE_NODE_RESULT_DETERMINED      -or $Global:SET_NOP_QOS_DISABLE_NODE_RESULT_DETERMINED    -or $Global:SET_NOP_P2P_DISABLE_NODE_RESULT_DETERMINED)`
+            -and ($Global:SET_MRO_DFRG_NODE_RESULT_DETERMINED         -or $Global:SET_MRO_INC_PFSIZE_UPDATE_NODE_RESULT_DETERMINED -or $Global:SET_MRO_TEMP_UPDATE_NODE_RESULT_DETERMINED)`
+            -and ($Global:SET_SA_DFNDR_DISABLE_NODE_RESULT_DETERMINED -or $Global:SET_SA_PR_HANDLE_NODE_RESULT_DETERMINED))) {
+            
+            Write-Error "[!] __Output_Dispatch_Center_Control_Function__ Failed" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[*] __Output_Dispatch_Center_Control_Function__ executed successfully, preparing final steps" -ForegroundColor Blue
+        $Global:OUTPUT_DISPATCH_CENTER_FUNCTION_MASTER_STATUS = $True
+        
     }
 
     __Output_Dispatch_Center_Control_Function__ 
@@ -762,7 +796,7 @@ if( -not ($Global:HostOSVersion.WindowsProductName -contains $Global:Incompatibl
         # ********************END OF -> Output Handling Section********************
 
 } else {
-    Write-Host "[!] The script can't run on Windows Server 2012, Windows Server 2008 R2 and Windows 8.1" -ForegroundColor White -BackgroundColor Red
-    Write-Host "[*] Exiting..." -ForegroundColor White -BackgroundColor Blue
+    Write-Host "[!] The script can't run on Windows Server 2012, Windows Server 2008 R2 and Windows 8.1. Exiting..." -ForegroundColor White -BackgroundColor Red
+    exit 1
 }
 
